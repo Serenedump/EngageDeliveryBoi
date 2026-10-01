@@ -236,6 +236,8 @@ section[aria-label="Calendar"] .head{box-shadow:0 8px 20px -12px rgba(190,90,10,
 .m small{display:block;font-size:.7rem;color:var(--mute);margin-bottom:1px}.m.me small{color:#8a5a2a}
 .m .x{border:0;padding:0 0 0 8px;font-size:.7rem;opacity:.6;background:none;box-shadow:none;color:inherit}
 .m p{margin:0;white-space:pre-wrap}
+.m a{color:inherit;font-weight:600;text-decoration:underline}.m img{display:block;max-width:100%;max-height:260px;border-radius:10px;margin-top:6px}
+#chatPic{background:var(--panel)!important;color:inherit!important;border:1px solid var(--line)!important;box-shadow:none!important;padding:0 12px}
 #chatForm{display:flex;gap:8px;margin:10px 0 0;padding:0;border:0}
 #chatForm input{flex:1;min-width:0}
 #chatForm button{flex:none;background:linear-gradient(#c24d0c,#a63a08);color:#fff;border:2px solid #fff;box-shadow:0 3px 0 #7a2a05;font-weight:700}
@@ -324,7 +326,7 @@ section[aria-label="Calendar"] .head{box-shadow:0 8px 20px -12px rgba(190,90,10,
   <section class="card team" aria-label="Team progress"><div class="head"><h2 id="teamTitle">Team</h2></div><div id="team"></div></section>
   <section class="card chat" aria-label="Team chat"><div class="head"><h2>Team chat</h2></div>
     <div id="msgs" aria-live="polite"><div class="empty">Connect Firebase (see setup notes) to chat with your team.</div></div>
-    <form id="chatForm" autocomplete="off"><input id="chatIn" maxlength="500" placeholder="Write a message..." aria-label="Message" disabled><button type="submit" id="chatGo" disabled>Send</button></form>
+    <form id="chatForm" autocomplete="off"><input id="chatIn" maxlength="500" placeholder="Write a message..." aria-label="Message" disabled><button type="button" id="chatPic" aria-label="Attach image or GIF" disabled>📎</button><input type="file" id="chatFile" accept="image/*" hidden><button type="submit" id="chatGo" disabled>Send</button></form>
   </section>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -765,7 +767,29 @@ tidy();requestAnimationFrame(function(){place(false)});
 <script>
 (function(){
 var box=document.getElementById("msgs"),inp=document.getElementById("chatIn"),go=document.getElementById("chatGo"),form=document.getElementById("chatForm");
-var rows=[],started=false,stick=true;
+var rows=[],started=false,stick=true,pend="";
+var pic=document.getElementById("chatPic"),pf=document.getElementById("chatFile");
+pic.onclick=function(){if(pend){pend="";pic.textContent="📎";inp.placeholder="Write a message...";return}pf.click()};
+pf.onchange=function(){var f=pf.files&&pf.files[0];pf.value="";if(!f)return;
+ if(!/^image\//.test(f.type)){alert("Only images or GIFs can be uploaded. For Google Sheets and other files, paste the share link.");return}
+ if(f.size>500*1024){alert("That file is too big (max 500 KB). Paste a link instead.");return}
+ var rd=new FileReader();rd.onload=function(){pend=String(rd.result);pic.textContent="✕";inp.placeholder="Image ready. Add a caption or tap Send.";inp.focus()};rd.readAsDataURL(f)};
+function linkLabel(u){var x;try{x=new URL(u)}catch(e){return u}var h=x.hostname,pt=x.pathname;
+ if(h==="docs.google.com"){if(pt.indexOf("/spreadsheets")===0)return"📊 Google Sheet";if(pt.indexOf("/document")===0)return"📄 Google Doc";if(pt.indexOf("/presentation")===0)return"📽 Google Slides";if(pt.indexOf("/forms")===0)return"📝 Google Form"}
+ if(h==="drive.google.com")return"📁 Google Drive file";
+ if(h==="forms.gle")return"📝 Google Form";
+ var t=h+(pt==="/"?"":pt);return t.length>42?t.slice(0,40)+"…":t}
+function isImgUrl(u){var x;try{x=new URL(u)}catch(e){return false}
+ return /\.(gif|png|jpe?g|webp)$/i.test(x.pathname)||/^(media\d*\.giphy\.com|i\.giphy\.com|media\.tenor\.com|c\.tenor\.com|i\.imgur\.com)$/.test(x.hostname)}
+function addText(p,text){var re=/https?:\/\/[^\s<>"']+/g,last=0,m,imgs=[];
+ while((m=re.exec(text))){var url=m[0].replace(/[.,!?;:)\]]+$/,"");
+  if(m.index>last)p.appendChild(document.createTextNode(text.slice(last,m.index)));
+  var a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=linkLabel(url);p.appendChild(a);
+  if(isImgUrl(url))imgs.push(url);
+  last=m.index+url.length;re.lastIndex=last}
+ if(last<text.length)p.appendChild(document.createTextNode(text.slice(last)));
+ return imgs}
+function addImg(m,src){var i=document.createElement("img");i.src=src;i.loading="lazy";i.alt="Shared image";i.referrerPolicy="no-referrer";m.appendChild(i)}
 function when(t){var d=new Date(t);return d.toLocaleTimeString("en",{hour:"numeric",minute:"2-digit"})}
 async function draw(){
  var ids=[...new Set(rows.map(function(r){return r.u}))];
@@ -777,20 +801,21 @@ async function draw(){
   var m=document.createElement("div");m.className="m"+(r.u===uid?" me":"");
   var sm=document.createElement("small");sm.textContent=(r.u===uid?"You":(names[r.u]||"Someone"))+" · "+when(r.ts);
   if(r.u===uid||canEditAll){var x=document.createElement("button");x.className="x";x.type="button";x.textContent="delete";x.setAttribute("aria-label","Delete message");x.onclick=function(){db.doc("chat/"+r.id).delete().catch(function(err){console.error(err)})};sm.appendChild(x)}
-  var p=document.createElement("p");p.textContent=r.text;
-  m.appendChild(sm);m.appendChild(p);box.appendChild(m)});
+  var p=document.createElement("p"),imgs=addText(p,r.text);
+  m.appendChild(sm);if(r.text)m.appendChild(p);imgs.forEach(function(u){addImg(m,u)});if(/^data:image\/(gif|png|jpe?g|webp);base64,/.test(r.img))addImg(m,r.img);box.appendChild(m)});
  if(near||stick){box.scrollTop=box.scrollHeight;stick=false}
 }
 function start(){
  if(started)return;started=true;stick=true;
- inp.disabled=!canW;go.disabled=!canW;inp.placeholder=canW?"Write a message...":"View only: you can't send messages";
+ inp.disabled=!canW;go.disabled=!canW;pic.disabled=!canW;inp.placeholder=canW?"Write a message...":"View only: you can't send messages";
  db.collection("chat").orderBy("ts","desc").limit(100).onSnapshot(function(s){
-  rows=s.docs.map(function(d){var v=d.data()||{};return{id:d.id,u:v.u,text:String(v.text||""),ts:+v.ts||0}}).sort(function(a,b){return a.ts-b.ts});draw()},function(e){console.error(e)});
+  rows=s.docs.map(function(d){var v=d.data()||{};return{id:d.id,u:v.u,text:String(v.text||""),img:String(v.img||""),ts:+v.ts||0}}).sort(function(a,b){return a.ts-b.ts});draw()},function(e){console.error(e)});
 }
 form.addEventListener("submit",function(e){
- e.preventDefault();var t=inp.value.trim();if(!t||!online||!canW)return;
- var ts=Date.now();inp.value="";stick=true;
- db.doc("chat/"+uid+"_"+ts).set({u:uid,text:t.slice(0,500),ts:ts}).catch(function(err){console.error(err);inp.value=t;alert("Could not send. Check your connection and Firebase rules.")});
+ e.preventDefault();var t=inp.value.trim(),im=pend;if((!t&&!im)||!online||!canW)return;
+ var ts=Date.now(),doc={u:uid,text:t.slice(0,500),ts:ts};if(im)doc.img=im;
+ inp.value="";pend="";pic.textContent="📎";inp.placeholder="Write a message...";stick=true;
+ db.doc("chat/"+uid+"_"+ts).set(doc).catch(function(err){console.error(err);inp.value=t;if(im){pend=im;pic.textContent="✕"}alert("Could not send. Check your connection and Firebase rules.")});
 });
 window.__chatStart=function(){if(online&&db)start()};window.__chatStart();
 })();
