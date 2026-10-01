@@ -430,7 +430,7 @@ const firebaseConfig={
  window.__changePw=async function(){var v=await pwDialog();if(!v||!fdb)return;try{var cu=firebase.auth().currentUser,E=firebase.auth.EmailAuthProvider;await cu.reauthenticateWithCredential(E.credential(cu.email,v.cur));await cu.updatePassword(v.nw);alert("Password changed.")}catch(e){console.error(e);alert("Could not change password. Check your current password.")}};
  window.__signOut=async function(){if(!fdb)return;try{await firebase.auth().signOut()}catch(e){console.error(e)}location.reload()};
  var ready=(async function(){
-  if(!ok)return;
+  if(!ok){window.__fbErr=window.firebase?"Firebase config is not filled in":"Firebase scripts did not load (check internet or ad blocker)";return}
   try{
    firebase.initializeApp(firebaseConfig);
    var auth=firebase.auth();fdb=firebase.firestore();
@@ -460,7 +460,7 @@ const firebaseConfig={
     canEdit:async function(){return admin},
     profiles:async function(ids){var o={};await Promise.all(ids.map(async function(i){try{var x=await fdb.doc("members/"+i).get();o[i]={name:(x.exists&&x.data().name)||""}}catch(e){o[i]={name:""}}}));return o}
    };
-  }catch(e){console.error("Firebase setup failed",e);fdb=null;U=null}
+  }catch(e){console.error("Firebase setup failed",e);fdb=null;U=null;window.__fbErr=String((e&&(e.code||e.message))||e).slice(0,140);setTimeout(function(){try{render()}catch(x){}},50)}
  })();
  window.__changeName=async function(){
   var n=(prompt("New name?",myName)||"").trim().slice(0,40);if(!n||!fdb)return;
@@ -685,14 +685,14 @@ async function drawTeam(){
  const tid=(u,ds)=>{const o=[];ds.forEach(dt=>items(dt,u).forEach(x=>o.push(iid(dt,x))));return o};
  const rows=ids.map(u=>{const set=S.done[u]||new Set,dI=tid(u,[sel]),mI=tid(u,mDts),wI=tid(u,wDts),c=a=>a.filter(i=>set.has(i)).length;return{u,n:c(dI),dt:dI.length,m:c(mI),mt:mI.length,w:c(wI),wt:wI.length,st:streakOf(set,u),name:(names[u]||"Someone")+(u===uid?" (you)":"")}});
  const medals=["🥇","🥈","🥉","4","5"],gof=u=>Object.values(S.groups||{}).filter(g=>g&&(g.m||[]).includes(u)).map(g=>g.name),top=rows.filter(r=>r.w>0).sort((a,b)=>b.w-a.w).slice(0,5),
-  lb=top.length?"<h3>Top engagers · last 7 days</h3>"+top.map((r,i)=>`<div class="who"><span class="medal">${medals[i]}</span><div class="nm">${esc(r.name)}<small>${r.w} of ${r.wt} items</small><small style="display:block">👥 ${esc(gof(r.u).join(", ")||"No group")}</small></div><div class="bar"><i style="width:${Math.round(100*r.w/Math.max(1,r.wt))}%"></i></div></div>`).join(""):"";
+  lb=top.length?"<h3>Top engagers · last 7 days</h3>"+top.map((r,i)=>`<div class="who"><span class="medal">${medals[i]}</span><div class="nm">${esc(r.name)}<small>${r.w} of ${r.wt} items</small><small style="display:block">👥 ${esc(gof(r.u).join(", ")||"No group")}</small></div><div class="bar"><i style="width:${Math.round(100*r.w/Math.max(1,r.wt))}%"></i></div></div>`).join(""):"<h3>Top engagers · last 7 days</h3><div class=\"empty\">No one has engaged yet this week. Tick an item and the top 5 will show up here.</div>";
  const grp=(title,f,cls,label)=>{const g=rows.filter(f);return g.length?"<h3>"+title+" ("+g.length+")</h3>"+g.map(r=>'<div class="who"><div class="nm">'+esc(r.name)+(r.st>=2?`<span class="bdg" title="${r.st}-day streak">${r.st>=30?"🏆":r.st>=7?"⭐":"🔥"} ${r.st}</span>`:"")+"<small>Month: "+r.m+" of "+r.mt+"</small></div><div class=\"bar\"><i style=\"width:"+Math.round(100*r.n/Math.max(1,r.dt))+'%"></i></div><span class="pill '+cls+'">'+label(r)+"</span></div>").join(""):""};
  T.innerHTML=lb+grp("Not engaged yet",r=>r.dt>0&&r.n===0,"no",r=>"0/"+r.dt)+grp("In progress",r=>r.n>0&&r.n<r.dt,"mid",r=>r.n+"/"+r.dt)+grp("All done",r=>r.dt>0&&r.n>=r.dt,"ok",r=>"Done")||'<div class="empty">No members yet.</div>';
 }
 function drawBanner(){
  const b=document.getElementById("banner");
  if(online){const n=names[uid];b.innerHTML="<span>Connected"+(n?" as <b>"+esc(n)+"</b>":"")+(canW?"":" · view only")+"</span>"}
- else b.innerHTML="<span>Not connected. Your progress is saved on this device only.</span>";
+ else b.innerHTML="<span>Not connected. Your progress is saved on this device only."+(window.__fbErr?"<br><small>Reason: "+esc(window.__fbErr)+"</small>":"")+"</span>";
 }
 function render(){drawCal();drawList();drawTeam();drawBanner();drawAdmin()}
 document.getElementById("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);drawCal()};
@@ -772,15 +772,23 @@ var pic=document.getElementById("chatPic"),pf=document.getElementById("chatFile"
 pic.onclick=function(){if(pend){pend="";pic.textContent="📎";inp.placeholder="Write a message...";return}pf.click()};
 pf.onchange=function(){var f=pf.files&&pf.files[0];pf.value="";if(!f)return;
  if(!/^image\//.test(f.type)){alert("Only images or GIFs can be uploaded. For Google Sheets and other files, paste the share link.");return}
- if(f.size>500*1024){alert("That file is too big (max 500 KB). Paste a link instead.");return}
- var rd=new FileReader();rd.onload=function(){pend=String(rd.result);pic.textContent="✕";inp.placeholder="Image ready. Add a caption or tap Send.";inp.focus()};rd.readAsDataURL(f)};
+ var done=function(d){pend=d;pic.textContent="✕";inp.placeholder="Image ready. Add a caption or tap Send.";inp.focus()};
+ if(f.type==="image/gif"){if(f.size>600*1024){alert("This GIF is too big (max 600 KB). Paste a link to it instead, like a Giphy or Tenor link.");return}
+  var rd=new FileReader();rd.onload=function(){done(String(rd.result))};rd.readAsDataURL(f);return}
+ var url=URL.createObjectURL(f),im=new Image();
+ im.onload=function(){var sc=1280,q=.82,out="";
+  for(var n=0;n<6;n++){var r=Math.min(1,sc/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*r));c.height=Math.max(1,Math.round(im.height*r));
+   var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);out=c.toDataURL("image/jpeg",q);
+   if(out.length<800*1024)break;sc=Math.round(sc*.75);q=Math.max(.5,q-.07)}
+  URL.revokeObjectURL(url);if(out.length>=900*1024){alert("Could not shrink this image enough. Paste a link instead.");return}done(out)};
+ im.onerror=function(){URL.revokeObjectURL(url);alert("Could not read that image.")};im.src=url};
 function linkLabel(u){var x;try{x=new URL(u)}catch(e){return u}var h=x.hostname,pt=x.pathname;
  if(h==="docs.google.com"){if(pt.indexOf("/spreadsheets")===0)return"📊 Google Sheet";if(pt.indexOf("/document")===0)return"📄 Google Doc";if(pt.indexOf("/presentation")===0)return"📽 Google Slides";if(pt.indexOf("/forms")===0)return"📝 Google Form"}
  if(h==="drive.google.com")return"📁 Google Drive file";
  if(h==="forms.gle")return"📝 Google Form";
  var t=h+(pt==="/"?"":pt);return t.length>42?t.slice(0,40)+"…":t}
 function isImgUrl(u){var x;try{x=new URL(u)}catch(e){return false}
- return /\.(gif|png|jpe?g|webp)$/i.test(x.pathname)||/^(media\d*\.giphy\.com|i\.giphy\.com|media\.tenor\.com|c\.tenor\.com|i\.imgur\.com)$/.test(x.hostname)}
+ return /\.(gif|png|jpe?g|webp)$/i.test(x.pathname)||/^(media\d*\.giphy\.com|i\.giphy\.com|media\.tenor\.com|c\.tenor\.com|i\.imgur\.com|encrypted-tbn\d\.gstatic\.com)$/.test(x.hostname)}
 function addText(p,text){var re=/https?:\/\/[^\s<>"']+/g,last=0,m,imgs=[];
  while((m=re.exec(text))){var url=m[0].replace(/[.,!?;:)\]]+$/,"");
   if(m.index>last)p.appendChild(document.createTextNode(text.slice(last,m.index)));
