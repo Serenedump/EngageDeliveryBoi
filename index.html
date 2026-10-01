@@ -312,7 +312,7 @@ section[aria-label="Calendar"] .head{box-shadow:0 8px 20px -12px rgba(190,90,10,
       <p class="sum" id="sum"></p>
       <div id="list"></div>
       <form id="add"><h3>Add many to this date</h3>
-        <textarea id="t" rows="3" required placeholder="One item per line. Add a link after |&#10;Example: My article title | https://site.com/post"></textarea>
+        <textarea id="t" rows="3" required placeholder="Paste links, one per line. Titles are filled in for you.&#10;Or: My title | https://site.com/post"></textarea>
         <div class="row"><select id="ty"><option value="a">Article</option><option value="v">Video</option></select><input id="tm" type="time" aria-label="Time"></div>
         <div id="adminAdd" hidden><details id="assign"><summary id="assignSum">Assign to: Everyone</summary><div id="assignGroups" class="chips"></div><div id="assignList"></div></details>
           <select id="rep" aria-label="Repeat"><option value="">Does not repeat</option><option value="d">Every day for 2 weeks</option><option value="w">Weekdays for 4 weeks</option><option value="k">Every week for 8 weeks</option></select></div>
@@ -700,14 +700,25 @@ document.getElementById("next").onclick=()=>{view=new Date(view.getFullYear(),vi
 document.getElementById("todayBtn").onclick=()=>{sel=new Date(today.getFullYear(),today.getMonth(),today.getDate());view=new Date(sel.getFullYear(),sel.getMonth(),1);render()};
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{filter=b.dataset.f;document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));drawList()});
 document.getElementById("q").oninput=drawList;
+function autoItem(u){var x;try{x=new URL(u)}catch(e){return{t:u}}
+ var h=x.hostname.replace(/^(www|m|mobile|vm|vt)\./,""),p=x.pathname,m;
+ if(/(^|\.)tiktok\.com$/.test(h)){m=p.match(/^\/@([^\/]+)/);return{t:"TikTok video"+(m?" by @"+m[1]:""),ty:"v"}}
+ if(/(^|\.)instagram\.com$/.test(h)){if(/^\/(reels?|tv)\//.test(p))return{t:"Instagram reel",ty:"v"};return{t:"Instagram post",ty:"a"}}
+ if(h==="x.com"||h==="twitter.com"){m=p.match(/^\/([^\/]+)\/status/);return{t:"X post"+(m?" by @"+m[1]:""),ty:"a"}}
+ if(h==="fb.watch")return{t:"Facebook video",ty:"v"};
+ if(/(^|\.)facebook\.com$/.test(h)||h==="fb.com"){if(/^\/reel\//.test(p))return{t:"Facebook reel",ty:"v"};if(/\/videos?\/|^\/watch/.test(p))return{t:"Facebook video",ty:"v"};return{t:"Facebook post",ty:"a"}}
+ if(h==="youtu.be"||/(^|\.)youtube\.com$/.test(h)){return{t:/^\/shorts\//.test(p)?"YouTube short":"YouTube video",ty:"v"}}
+ var tt=h+(p==="/"?"":p);return{t:tt.length>60?tt.slice(0,58)+"…":tt}}
 document.getElementById("add").addEventListener("submit",e=>{e.preventDefault();
  if(online&&!canW){alert("You have view-only access, so you can't add items.");return}
  const k=key(sel),ty=document.getElementById("ty").value,tm=document.getElementById("tm").value;
  const to=[...document.querySelectorAll("#assignList input:checked")].map(i=>i.value),rp=document.getElementById("rep").value,sr0=Date.now().toString(36)+Math.random().toString(36).slice(2,6),dts=[sel];
  if(rp){const step=rp==="k"?7:1,cnt=rp==="d"?13:rp==="w"?27:7;for(let i=1;i<=cnt;i++){const dt=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()+i*step);if(rp==="w"&&(dt.getDay()===0||dt.getDay()===6))continue;dts.push(dt)}}
- const add={};document.getElementById("t").value.split("\n").map(l=>l.trim()).filter(Boolean).forEach((l,li)=>{const[t,u]=l.split("|").map(z=>z.trim());
-  dts.forEach((dt,di)=>{const kk=key(dt),it={t,ty,tm,u:/^https?:\/\//.test(u||"")?u:"",by:uid||"local"};if(!di)it.at=Date.now();if(to.length){it.to=to;const gm=grpMeta(to);if(gm.gn.length){it.gn=gm.gn;it.gx=gm.gx}}if(rp)it.sr=sr0+"-"+li;it.id=newId();(add[kk]=add[kk]||[]).push(it)})});
- Object.keys(add).forEach(kk=>mutate(kk,l=>l.concat(add[kk])));e.target.reset();render()});
+ const add={},seenU=new Set;let skipped=0;document.getElementById("t").value.split("\n").map(l=>l.trim()).filter(Boolean).forEach((l,li)=>{let t,u,lty=ty;const raw=l.split("|").map(z=>z.trim());
+  if(raw.length===1&&/^https?:\/\/\S+$/.test(raw[0])){u=raw[0];const g=autoItem(u);t=g.t;if(g.ty)lty=g.ty}else{t=raw[0];u=raw[1]}
+  if(u&&seenU.has(u)){skipped++;return}if(u)seenU.add(u);
+  dts.forEach((dt,di)=>{const kk=key(dt);if(u&&(S.items[kk]||[]).some(z=>z.u===u)){if(!di)skipped++;return}const it={t,ty:lty,tm,u:/^https?:\/\//.test(u||"")?u:"",by:uid||"local"};if(!di)it.at=Date.now();if(to.length){it.to=to;const gm=grpMeta(to);if(gm.gn.length){it.gn=gm.gn;it.gx=gm.gx}}if(rp)it.sr=sr0+"-"+li;it.id=newId();(add[kk]=add[kk]||[]).push(it)})});
+ Object.keys(add).forEach(kk=>mutate(kk,l=>l.concat(add[kk])));e.target.reset();render();if(skipped)alert("Skipped "+skipped+" link"+(skipped>1?"s":"")+" already added.")});
 render();
 (async()=>{
  try{user=await claude.use("user");db=await claude.use("db")}catch(e){}
