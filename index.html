@@ -423,11 +423,11 @@ const firebaseConfig={
  function loginUI(auth,anon){return new Promise(function(res){
   var up=false,o=mkOverlay("Sign in","Use the same username and password on any browser or device."),f=o.f;
   var u=fld(f,"Username","text","username",20),p=fld(f,"Password","password","current-password",64),em=fld(f,"Recovery email (optional, for forgot password)","email","email",80),m=msgEl(f),go=btn("Sign in","go"),tg=btn("New here? Create an account"),fg=btn("Forgot password?");
-  em.required=false;em.autocapitalize="none";em.parentNode.style.display="none";
+  em.required=false;em.autocapitalize="none";em.parentNode.style.display="none";var hp=document.createElement("p");hp.style.cssText="margin:0;padding:8px 10px;border-radius:10px;background:var(--bg);font-size:.85rem";hp.textContent="👋 First time here? Tap “New here? Create an account” at the bottom. Already have one? Type your username and password, then tap Sign in.";f.insertBefore(hp,u.parentNode);
   u.autocapitalize="none";u.spellcheck=false;
   [tg,fg].forEach(function(b){b.style.cssText="border:0;background:transparent;text-decoration:underline;box-shadow:none;color:inherit"});
   function say(t,bad){m.textContent=t;m.style.color=bad?"#c0392b":"var(--mute)"}
-  function mode(){f.firstChild.textContent=up?"Create account":"Sign in";go.textContent=up?"Create account":"Sign in";tg.textContent=up?"Have an account? Sign in":"New here? Create an account";p.autocomplete=up?"new-password":"current-password";em.parentNode.style.display=up?"":"none";fg.style.display=up?"none":"";say(up&&anon?"Your current progress on this device will be kept.":"",false)}
+  function mode(){hp.textContent=up?"Pick any username (3-20 letters or numbers) and a password (6+ characters). Remember them: you'll use the same ones on any phone or computer. A recovery email is optional, but it lets you reset a forgotten password.":"👋 First time here? Tap “New here? Create an account” at the bottom. Already have one? Type your username and password, then tap Sign in.";f.firstChild.textContent=up?"Create account":"Sign in";go.textContent=up?"Create account":"Sign in";tg.textContent=up?"Have an account? Sign in":"New here? Create an account";p.autocomplete=up?"new-password":"current-password";em.parentNode.style.display=up?"":"none";fg.style.display=up?"none":"";say(up&&anon?"Your current progress on this device will be kept.":"",false)}
   tg.onclick=function(){up=!up;mode()};
   fg.onclick=async function(){
    var n=u.value.trim();
@@ -1094,6 +1094,117 @@ function startSync(){
  if(open)build();
 }
 var iv=setInterval(function(){try{if(online&&db){clearInterval(iv);startSync()}}catch(e){}},500);
+})();
+</script>
+<style>
+#start{margin-bottom:16px;border:2px solid var(--pin)}#start .head{flex-wrap:wrap}
+#start ol{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+#start li{display:flex;gap:10px;align-items:center;font-size:.92rem}
+#start li i{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;font-weight:800;font-size:.78rem}
+#start li.ok i{background:var(--pin);border-color:var(--pin);color:var(--pinink)}#start li.ok span{opacity:.55;text-decoration:line-through}
+#tour{position:fixed;inset:0;z-index:10000}#tour .shade{position:absolute;inset:0}
+#tour .hole{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.65),0 0 0 3px #fff;pointer-events:none}
+#tour .tip{position:fixed;left:50%;transform:translateX(-50%);width:min(92vw,400px);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:16px 16px 14px;box-shadow:0 16px 40px -12px rgba(0,0,0,.6)}
+#tour .tip h3{margin:2px 0 6px;font-size:1.1rem}#tour .tip p{margin:0 0 12px;font-size:.93rem}#tour .tip small{color:var(--mute);font-weight:700}
+#tour .tb{display:flex;gap:8px;align-items:center}
+</style>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},q=function(x){return document.querySelector(x)};
+var K=function(n){return"engage-"+n+":"+(typeof uid!=="undefined"&&uid?uid:"local")};
+var get=function(n){try{return localStorage.getItem(K(n))}catch(e){return null}},set=function(n,v){try{localStorage.setItem(K(n),v)}catch(e){}};
+var srv=-1,off=false,hooked=false,active=false,idx=0,steps=[],node=null,raf=0,ov=null,sig="";
+setTimeout(function(){off=true},6000);
+function authOpen(){return !!q("body > div[aria-modal]:not(#tour)")}
+function prog(){return mine().size>0||srv>0}
+function ready(){return !authOpen()&&(online?srv>=0:off)}
+function find(s){var p=(s.e||"").split("|");for(var i=0;i<p.length;i++){var n=p[i]&&q(p[i]);if(n)return n}return null}
+function findDay(){var b=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+ for(var i=0;i<=90;i++)for(var g=1;g>=-1;g-=2){if(!i&&g<0)continue;var d=new Date(b.getFullYear(),b.getMonth(),b.getDate()+g*i);if(items(d).length)return d}return null}
+function mk(has){return[
+{t:"Welcome! \uD83D\uDC4B",x:"Each day has a short list of articles and videos to engage with. Here's how it works (30 seconds)."+(has?"":" Nothing is on your list yet. Your admin adds items, so check back soon.")},
+{t:"1. Pick a date",x:"Every pin is a day. Tap one to see its list. The tiny dots show how many articles and videos are inside.",e:"#days .day.sel"},
+{t:"2. Your list for the day",x:"Everything for that date shows up here. Each row is one article or video.",e:"#list .item",n:1},
+{t:"3. Open the link first",x:"Tap the title to open it in a new tab. Read or watch it, then come back to this page.",e:"#list .item a",n:1},
+{t:"4. Then tick the box",x:"After you have opened the link, tick the box to mark it done. It won't let you tick before opening the link.",e:"#list .item input[type=checkbox]",n:1},
+{t:"Watch your progress",x:"The ring shows how much you finished today, plus your streak. Finish everything and that day's pin gets a green \u2713.",e:"#sum"},
+{t:"Missed a day?",x:"These shortcuts show past days that still have items for you. Tap one to jump straight there.",e:"#notif .chips|#notif"},
+{t:"Team & chat \uD83D\uDCAC",x:"See who has engaged, and chat with everyone at the bottom of the page. You're ready: open today's first link!",e:".team .head"}
+].filter(function(s){return has||!s.n})}
+function sc(el,v){if(el._v!==v){el._v=v;el.style.cssText=v}}
+function place(){
+ var h=$("tH"),tip=ov.querySelector(".tip");
+ if(node&&!node.isConnected)node=find(steps[idx]);
+ if(node){var r=node.getBoundingClientRect(),p=6;
+  sc(h,"left:"+(r.left-p)+"px;top:"+(r.top-p)+"px;width:"+(r.width+2*p)+"px;height:"+(r.height+2*p)+"px");
+  sc(tip,r.top+r.height/2>innerHeight/2?"top:calc(12px + env(safe-area-inset-top,0px))":"bottom:calc(12px + env(safe-area-inset-bottom,0px))")}
+ else{sc(h,"left:50%;top:50%;width:0;height:0");sc(tip,"top:50%;transform:translate(-50%,-50%)")}}
+function loop(){if(!active)return;place();raf=requestAnimationFrame(loop)}
+function show(i){idx=i;var s=steps[i];node=find(s);if(node)node.scrollIntoView({block:"center",behavior:"smooth"});
+ $("tT").textContent=s.t;$("tX").textContent=s.x;$("tC").textContent=(i+1)+" / "+steps.length;
+ $("tB").style.visibility=i?"visible":"hidden";$("tN").textContent=i===steps.length-1?"Got it":"Next";$("tN").focus({preventScroll:true})}
+function finish(){active=false;cancelAnimationFrame(raf);if(ov){ov.remove();ov=null}set("tour","1");upd()}
+function start(){
+ if(active)return;active=true;set("tour","1");
+ var d=findDay();if(d){sel=d;view=new Date(d.getFullYear(),d.getMonth(),1);render()}
+ steps=mk(!!d);
+ ov=document.createElement("div");ov.id="tour";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label","Quick tour");
+ ov.innerHTML='<div class="shade"></div><div class="hole" id="tH"></div><div class="tip"><small id="tC"></small><h3 id="tT"></h3><p id="tX"></p><div class="tb"><button type="button" id="tS">Skip</button><span style="flex:1"></span><button type="button" id="tB">Back</button><button type="button" class="go" id="tN">Next</button></div></div>';
+ document.body.appendChild(ov);
+ $("tS").onclick=finish;$("tB").onclick=function(){show(idx-1)};$("tN").onclick=function(){idx===steps.length-1?finish():show(idx+1)};
+ show(0);loop()}
+document.addEventListener("keydown",function(e){if(!active)return;
+ if(e.key==="Escape")finish();else if(e.key==="ArrowRight")$("tN").click();else if(e.key==="ArrowLeft"&&idx)show(idx-1)});
+function card(){
+ var s=$("start"),n=$("notif");if(!n)return;
+ if(!s){s=document.createElement("section");s.id="start";s.className="card";s.setAttribute("aria-label","Getting started");n.parentNode.insertBefore(s,n)}
+ s.hidden=false;
+ var b=VIS.size>0,a=!!get("picked")||b,g=a+""+b;if(g===sig&&s.firstChild)return;sig=g;
+ var li=function(ok,i,t){return'<li'+(ok?' class="ok"':'')+'><i>'+(ok?"\u2713":i)+'</i><span>'+t+'</span></li>'};
+ s.innerHTML='<div class="head"><h2>\uD83D\uDC4B Start here</h2><div style="display:flex;gap:6px"><button type="button" class="go" id="stGo">Show me how</button><button type="button" id="stX" aria-label="Hide this guide">Hide</button></div></div><p style="margin:0;color:var(--mute);font-size:.88rem">Do these 3 things to get your first check:</p><ol>'+li(a,1,"Tap a date (pin) on the calendar")+li(b,2,"Tap the title of an item to open its link")+li(false,3,"Come back here and tick the box")+'</ol>';
+ $("stGo").onclick=start;$("stX").onclick=function(){set("hide","1");upd()}}
+function upd(){
+ var s=$("start");
+ if(!ready()||prog()||get("hide")){if(s)s.hidden=true;return}
+ card();
+ if(!get("tour")&&!active){set("tour","1");setTimeout(start,700)}}
+var _r=render;render=function(){var res=_r.apply(this,arguments);upd();return res};
+var _b=drawBanner;drawBanner=function(){_b();var b=$("banner");if(b){var h=document.createElement("button");h.type="button";h.textContent="\u2753 How to use";h.style.cssText="font-size:.78rem;padding:3px 11px";h.onclick=start;b.appendChild(h)}};
+$("days").addEventListener("click",function(e){if(e.target.closest(".day:not(.out)")){set("picked","1");upd()}});
+setInterval(function(){
+ if(online&&db&&uid&&!hooked){hooked=true;db.doc("done/"+uid).onSnapshot(function(s){srv=((s.data()||{}).ids||[]).length;upd()},function(){srv=0;upd()})}
+ upd()},700);
+drawBanner();
+})();
+</script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},KS="engage-sound",ctx=null,t1=0,seen=null,seenM=null;
+var on=true;try{on=localStorage.getItem(KS)!=="off"}catch(e){}
+function unlock(){try{if(!ctx){var A=window.AudioContext||window.webkitAudioContext;if(A)ctx=new A()}if(ctx&&ctx.state==="suspended")ctx.resume()}catch(e){}}
+["pointerdown","keydown","touchstart"].forEach(function(e){addEventListener(e,unlock,{passive:true})});
+function chime(force){if(!on&&!force)return;unlock();if(!ctx||ctx.state!=="running")return;var t=ctx.currentTime;
+ [[880,0],[1318,.14]].forEach(function(n){var o=ctx.createOscillator(),g=ctx.createGain(),a=t+n[1];o.type="sine";o.frequency.value=n[0];
+  g.gain.setValueAtTime(0,a);g.gain.linearRampToValueAtTime(.25,a+.02);g.gain.exponentialRampToValueAtTime(.001,a+.4);
+  o.connect(g);g.connect(ctx.destination);o.start(a);o.stop(a+.45)})}
+function settled(){if(!online)return false;if(!t1)t1=Date.now();return Date.now()-t1>3000}
+function scan(){
+ var ids=new Set(),fresh=0;
+ Object.keys(S.items).forEach(function(k){(S.items[k]||[]).forEach(function(x){if(!x||!x.at)return;var id=k+"|"+x.id+"|"+x.at;ids.add(id);
+  if(seen&&!seen.has(id)&&x.by!==uid&&mineOnly(x,ME))fresh++})});
+ if(settled()&&seen&&fresh)chime();
+ if(online&&(!seen||settled()||!t1||Date.now()-t1<=3000))seen=ids}
+var _r=render;render=function(){var res=_r.apply(this,arguments);try{scan()}catch(e){}return res};
+var box=$("msgs");
+if(box)new MutationObserver(function(){
+ var cur=new Set();box.querySelectorAll(".m:not(.me)").forEach(function(m){cur.add(m.textContent)});
+ var fresh=false;if(seenM)cur.forEach(function(k){if(!seenM.has(k))fresh=true});
+ if(settled()&&fresh)chime();
+ seenM=cur}).observe(box,{childList:true});
+var _b=drawBanner;drawBanner=function(){_b();var b=$("banner");if(!b)return;var h=document.createElement("button");h.type="button";
+ h.textContent=on?"\uD83D\uDD14 Sound on":"\uD83D\uDD15 Sound off";h.setAttribute("aria-pressed",on);h.style.cssText="font-size:.78rem;padding:3px 11px";
+ h.onclick=function(){on=!on;try{localStorage.setItem(KS,on?"on":"off")}catch(e){}if(on)chime(true);drawBanner()};b.appendChild(h)};
+drawBanner();
 })();
 </script>
 </body>
