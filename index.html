@@ -1031,7 +1031,7 @@ function build(){
   h+='</select></label></div></div><div><h3>Picture</h3><div class="rw"><button type="button" class="go" id="lkP">Choose photo</button><input type="file" id="lkFile" accept="image/*" hidden><button type="button" class="plain" id="lkRP">Reset photo</button>'+
    '<label class="ck"><input type="checkbox" id="lkBW"'+(st.bw?" checked":"")+'>Black &amp; white photo</label></div></div>'+
    '<div class="rw"><button type="button" class="plain" id="lkAll">Reset everything</button></div>'+
-   '<p class="nt">'+(sync?"Changes here are saved for everyone and everyone will see them.":"Changes are saved on this device only (not connected).")+'</p></div>';
+   '<p class="nt">'+(sync?"Changes here are saved for everyone and everyone will see them.":"Changes are saved on this device only (not connected).")+(sync&&lastBy?' Last changed by <b>'+lastBy.replace(/[<>&"]/g,"")+'</b>'+(lastTs?" on "+new Date(lastTs).toLocaleString():"")+".":"")+'</p></div>';
  }
  box.innerHTML=h;
 }
@@ -1062,18 +1062,18 @@ box.addEventListener("change",function(e){
  }
 });
 apply();loadPhoto();build();
-var sync=false,lastEdit=0,wt=0,warned=false;
+var sync=false,lastEdit=0,wt=0,warned=false,lastBy="",lastTs=0;function who(){try{return(typeof names!=="undefined"&&names[uid])||uid||"unknown"}catch(e){return"unknown"}}
 function fail(e){console.error(e);if(!warned){warned=true;alert("Could not save the look for everyone. Check the Firebase rules for the 'look' collection.")}}
 function pushShared(){
  if(!sync)return;lastEdit=Date.now();clearTimeout(wt);
- wt=setTimeout(function(){db.doc("look/shared").set({p:st.p,c:st.c,f:st.f,bw:st.bw,ts:Date.now()}).catch(fail)},500);
+ wt=setTimeout(function(){lastBy=who();lastTs=Date.now();db.doc("look/shared").set({p:st.p,c:st.c,f:st.f,bw:st.bw,ts:lastTs,by:uid||"",n:lastBy}).catch(fail)},500);
 }
 function sharePhoto(u){
  if(!sync)return;lastEdit=Date.now();
- (u?db.doc("look/photo").set({img:u,ts:Date.now()}):db.doc("look/photo").delete()).catch(fail);
+ (u?db.doc("look/photo").set({img:u,ts:Date.now(),by:uid||"",n:who()}):db.doc("look/photo").delete()).catch(fail);
 }
 function pull(d){
- if(!d||!P[d.p])return;
+ if(!d||!P[d.p])return;lastBy=d.n||"";lastTs=d.ts||0;
  st.p=d.p;st.c=d.c||{};st.f=F[d.f]?d.f:"default";st.bw=d.bw!==false;
  try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
  apply();if(open&&!box.contains(document.activeElement))build();
@@ -1205,6 +1205,21 @@ var _b=drawBanner;drawBanner=function(){_b();var b=$("banner");if(!b)return;var 
  h.textContent=on?"\uD83D\uDD14 Sound on":"\uD83D\uDD15 Sound off";h.setAttribute("aria-pressed",on);h.style.cssText="font-size:.78rem;padding:3px 11px";
  h.onclick=function(){on=!on;try{localStorage.setItem(KS,on?"on":"off")}catch(e){}if(on)chime(true);drawBanner()};b.appendChild(h)};
 drawBanner();
+})();
+</script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},L={s:null,p:null},hooked=false;
+function esc(t){return String(t).replace(/[<>&"]/g,"")}
+function fmt(d){if(!d)return"no changes saved yet";return"<b>"+esc(d.n||"Unknown (changed before tracking)")+"</b> on "+(d.ts?new Date(d.ts).toLocaleString():"unknown date")}
+function draw(){var a=$("admin");if(!a)return;var p=$("lookInfo"),h=a.querySelector(".head");if(!h)return;
+ if(!p){p=document.createElement("div");p.id="lookInfo";p.style.cssText="margin:10px 0;font-size:.9rem;display:grid;gap:2px";h.parentNode.insertBefore(p,h.nextSibling)}
+ p.innerHTML="<h3 style='margin:0 0 4px;font-size:1rem'>Look last changed</h3><div>Colors, theme, font: "+fmt(L.s)+"</div><div>Picture: "+fmt(L.p)+"</div>"}
+var iv=setInterval(function(){try{
+ if(online&&db&&canEditAll&&!hooked){hooked=true;clearInterval(iv);
+  db.doc("look/shared").onSnapshot(function(s){L.s=s.exists?s.data():null;draw()},function(){});
+  db.doc("look/photo").onSnapshot(function(s){L.p=s.exists?s.data():null;draw()},function(){})}}catch(e){}},700);
+draw();
 })();
 </script>
 </body>
