@@ -4,17 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Will Ashley's Engagement</title>
-<meta name="description" content="Will Ashley's Engagement: the team's daily schedule, tasks and chat.">
+<meta name="description" content="Will Ashley's Engagement: the team's daily schedule and tasks.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Will Ashley's Engagement">
-<meta property="og:description" content="The team's daily schedule, tasks and chat.">
+<meta property="og:description" content="The team's daily schedule and tasks.">
 <meta property="og:url" content="https://serenedump.github.io/EngageDeliveryBoi/">
 <meta property="og:image" content="https://serenedump.github.io/EngageDeliveryBoi/preview.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Will Ashley's Engagement">
-<meta name="twitter:description" content="The team's daily schedule, tasks and chat.">
+<meta name="twitter:description" content="The team's daily schedule and tasks.">
 <meta name="twitter:image" content="https://serenedump.github.io/EngageDeliveryBoi/preview.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@1,125,900&display=swap" rel="stylesheet">
@@ -228,19 +228,6 @@ section[aria-label="Calendar"] .head{box-shadow:0 8px 20px -12px rgba(190,90,10,
 .hero h1 .l2{font-size:clamp(.95rem,4vw,1.5rem);-webkit-text-stroke:3px #e8590c;padding:1px 14px;box-shadow:0 0 0 3px #fff}
 .hero p{font-size:.8rem;margin-top:8px;max-width:40ch;line-height:1.35}
 @media(max-width:520px){.wrap{padding:12px 12px 32px}.head h2,#month,section[aria-label="Calendar"] #month{font-size:1.05rem!important}.head h2:not(#month){font-size:1rem!important}.head button{padding:6px 12px;font-size:.85rem}#month::before,#month::after{display:none}.day{font-size:.72rem}.item{font-size:.9rem}.item small{font-size:.75rem}.tag{width:58px;font-size:.66rem}}
-/* Team chat */
-.chat{margin-top:16px}
-#msgs{height:min(46vh,380px);overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--bg);border-radius:16px;border:1px solid var(--line)}
-.m{max-width:82%;align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:7px 11px;font-size:.92rem;overflow-wrap:anywhere}
-.m.me{align-self:flex-end;background:#ffe2b8;color:#3b2a1d;border-color:#f6c98f;border-radius:16px 16px 4px 16px}
-.m small{display:block;font-size:.7rem;color:var(--mute);margin-bottom:1px}.m.me small{color:#8a5a2a}
-.m .x{border:0;padding:0 0 0 8px;font-size:.7rem;opacity:.6;background:none;box-shadow:none;color:inherit}
-.m p{margin:0;white-space:pre-wrap}
-.m a{color:inherit;font-weight:600;text-decoration:underline}.m img{display:block;max-width:100%;max-height:260px;border-radius:10px;margin-top:6px}
-#chatPic{background:var(--panel)!important;color:inherit!important;border:1px solid var(--line)!important;box-shadow:none!important;padding:0 12px}
-#chatForm{display:flex;gap:8px;margin:10px 0 0;padding:0;border:0}
-#chatForm input{flex:1;min-width:0}
-#chatForm button{flex:none;background:linear-gradient(#c24d0c,#a63a08);color:#fff;border:2px solid #fff;box-shadow:0 3px 0 #7a2a05;font-weight:700}
 /* Updates / notifications */
 .notif{margin-bottom:16px}
 .notif .head{flex-wrap:wrap}
@@ -259,7 +246,7 @@ section[aria-label="Calendar"] .head{box-shadow:0 8px 20px -12px rgba(190,90,10,
 #toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);max-width:min(92vw,420px);background:#3b2a1d;color:#fff;padding:11px 16px;border-radius:16px;font-size:.88rem;box-shadow:0 10px 24px -8px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:50}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 
-/* Engagement: progress ring, streaks, done pins, reactions, leaderboard */
+/* Engagement: progress ring, streaks, done pins, leaderboard */
 .legend{flex-wrap:wrap}.legend .f::before{background:#3f8f2a}
 .day.full:not(.sel){background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 56'%3E%3Cpath d='M20 1C9.5 1 1 9.5 1 20c0 14 19 35 19 35s19-21 19-35C39 9.5 30.500 1 20 1z' fill='%233f8f2a' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E")}
 .day.full::before{content:"\2713";position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:#fff;color:#3f8f2a;font-size:.62rem;line-height:13px;text-align:center;z-index:3}
@@ -268,28 +255,19 @@ section[aria-label="Calendar"] .head{box-shadow:0 8px 20px -12px rgba(190,90,10,
 .sum .st{flex:1;min-width:120px}.sum .st b{color:var(--ink)}.stk{display:block;font-weight:700;color:#b8420a}
 .sum button{font-size:.78rem;padding:4px 12px}
 .item>div{flex:1;min-width:0}
-.rx{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-.rxb{padding:2px 9px;font-size:.76rem;font-weight:600;background:var(--panel)}
-.rxb.on{background:#ffe2b8;border-color:#f6c98f;color:#3b2a1d}
-.nt{flex-basis:100%;font-size:.8rem;color:var(--mute);overflow-wrap:anywhere}.nt b{color:var(--ink);font-weight:600}
-.ne{flex-basis:100%;display:flex;gap:6px}.ne input{padding:6px 10px;font-size:.85rem}.ne button{padding:4px 12px;font-size:.78rem}
 .bdg{display:inline-block;font-size:.72rem;font-weight:700;background:#ffe2b8;color:#8a3a08;border-radius:999px;padding:1px 8px;margin-left:6px}
 .medal{font-size:1.1rem;width:26px;text-align:center;flex:none}
 /* Admin tools */
 #admin{margin-top:16px}#admin[hidden],#adminAdd[hidden],#adminOut[hidden]{display:none}
 #adminAdd{display:grid;gap:8px}
 .arow{display:flex;gap:8px;flex-wrap:wrap}.arow button{font-size:.85rem}
-#adminOut{margin-top:10px;font-size:.85rem}
 #assign summary{cursor:pointer;font-weight:600;font-size:.9rem;padding:6px 2px}
 #assignList{max-height:150px;overflow-y:auto;padding:4px 2px}
 .ck{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:.9rem}.ck input{width:18px;height:18px;padding:0;flex:none}
 .ef{flex:1;display:grid;gap:6px;min-width:0}
 .acts{margin-left:auto;display:flex;gap:2px;flex:none;height:fit-content}
-#assignGroups{margin:4px 0}#assignGroups:empty{display:none}
-#groupBox{margin-top:16px;padding-top:12px;border-top:1px dashed var(--line)}#groupBox h3{margin:0 0 6px;font-size:.95rem}
-#grpForm{margin-top:8px;padding-top:0;border:0}
-#grpForm summary,.ef summary{cursor:pointer;font-weight:600;font-size:.9rem;padding:6px 2px}
-#grpMembers,.ef .alist{max-height:150px;overflow-y:auto;padding:4px 2px}
+.ef summary{cursor:pointer;font-weight:600;font-size:.9rem;padding:6px 2px}
+.ef .alist{max-height:150px;overflow-y:auto;padding:4px 2px}
 .ef .chips{margin:2px 0}
 
 /* Look & feel (customizable) */
@@ -303,7 +281,7 @@ html[data-bw] .hero img{filter:grayscale(1)}
 .hero p{color:var(--hink);text-shadow:none}
 .hero h1 .l1{color:var(--hink);-webkit-text-stroke:0;text-shadow:0 3px 0 var(--pin)}
 .hero h1 .l2{color:var(--hbar);-webkit-text-stroke:0;background:var(--hink);box-shadow:0 0 0 3px var(--pin)}
-.head button,#todayBtn,.go,.tabs button[aria-pressed="true"],#chatForm button{background:var(--btn);color:var(--btnink);border:2px solid var(--panel);box-shadow:0 3px 0 var(--btnsh)}
+.head button,#todayBtn,.go,.tabs button[aria-pressed="true"]{background:var(--btn);color:var(--btnink);border:2px solid var(--panel);box-shadow:0 3px 0 var(--btnsh)}
 .go:hover,.head button:hover,#todayBtn:hover{background:var(--btn);filter:brightness(1.2)}
 #month,section[aria-label="Calendar"] #month{color:var(--ink);background:linear-gradient(transparent 55%,var(--line) 55%)}
 #dayTitle{color:var(--ink)}
@@ -319,7 +297,6 @@ section[aria-label="Calendar"] .head,.legend{background:var(--panel);border:1px 
 .tag.a{background:var(--btn);color:var(--btnink)}.tag.v{background:#9a9a9a;color:#fff}
 .chips button b,.stk{color:var(--ink)}
 .rg-f{stroke:var(--pin)!important}
-.rxb.on{background:var(--btn);border-color:var(--btn);color:var(--btnink)}
 .bdg{background:var(--line)!important;color:var(--ink)!important}
 /* Customize panel */
 .look{margin-bottom:16px}
@@ -365,20 +342,15 @@ html[data-fnt] .hero h1,html[data-fnt] .hero h1 span,html[data-fnt] .head h2,htm
       <form id="add"><h3>Add many to this date</h3>
         <textarea id="t" rows="3" required placeholder="Paste links, one per line. Titles are filled in for you.&#10;Or: My title | https://site.com/post"></textarea>
         <div class="row"><select id="ty"><option value="a">Article</option><option value="v">Video</option></select><input id="tm" type="time" aria-label="Time"></div>
-        <div id="adminAdd" hidden><details id="assign"><summary id="assignSum">Assign to: Everyone</summary><div id="assignGroups" class="chips"></div><div id="assignList"></div></details>
+        <div id="adminAdd" hidden><details id="assign"><summary id="assignSum">Assign to: Everyone</summary><div id="assignList"></div></details>
           <select id="rep" aria-label="Repeat"><option value="">Does not repeat</option><option value="d">Every day for 2 weeks</option><option value="w">Weekdays for 4 weeks</option><option value="k">Every week for 8 weeks</option></select></div>
         <button class="go" type="submit">Add items</button></form>
     </section>
   </div>
   <section class="card" id="admin" aria-label="Admin tools" hidden><div class="head"><h2>Admin tools</h2></div>
-    <p class="sum">Export or summarize your team's engagement.</p>
-    <div class="arow"><button type="button" id="csvWkBtn">Download CSV (week)</button><button type="button" id="csvBtn">Download CSV (month)</button><button type="button" id="sumBtn">Copy weekly summary</button><button type="button" id="opensBtn">Download CSV (who opened links)</button></div>
-    <textarea id="adminOut" rows="7" readonly hidden aria-label="Weekly summary"></textarea><div id="memberBox"><h3>Members</h3><div id="memberList"></div></div><div id="groupBox"><h3>Groups</h3><div id="groupList"></div><form id="grpForm" autocomplete="off"><input id="grpName" maxlength="30" placeholder="Group name (same name updates it)" aria-label="Group name"><details><summary id="grpSum">Members: none</summary><div id="grpMembers"></div></details><button class="go" type="submit">Save group</button></form></div></section>
+    <p class="sum">Manage your team members and admins.</p>
+    <div id="memberBox"><h3>Members</h3><div id="memberList"></div></div></section>
   <section class="card team" aria-label="Team progress"><div class="head"><h2 id="teamTitle">Team</h2></div><div id="team"></div></section>
-  <section class="card chat" aria-label="Team chat"><div class="head"><h2>Team chat</h2></div>
-    <div id="msgs" aria-live="polite"><div class="empty">Connect Firebase (see setup notes) to chat with your team.</div></div>
-    <form id="chatForm" autocomplete="off"><input id="chatIn" maxlength="500" placeholder="Write a message..." aria-label="Message" disabled><button type="button" id="chatPic" aria-label="Attach image or GIF" disabled>📎</button><input type="file" id="chatFile" accept="image/*" hidden><button type="submit" id="chatGo" disabled>Send</button></form>
-  </section>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -535,12 +507,12 @@ const hash=s=>{let h=5381;for(const c of s)h=((h<<5)+h+c.charCodeAt(0))>>>0;retu
 const fmt=t=>{if(!t)return"";const[h,m]=t.split(":");return((+h)%12||12)+":"+m+(+h<12?" AM":" PM")};
 const today=new Date();let view=new Date(today.getFullYear(),today.getMonth(),1),sel=new Date(today.getFullYear(),today.getMonth(),today.getDate()),filter="all";
 let db=null,user=null,uid=null,canW=true,online=false,names={};
-const S={items:{},done:{},roster:[],react:{},groups:{},admins:new Set};
+const S={items:{},done:{},roster:[],admins:new Set};
 let ME="local";
 const LK="engage-local-v2";
-try{const l=JSON.parse(localStorage.getItem(LK)||"{}");S.items=l.items||{};S.react=l.react||{};S.done.local=new Set(l.done||[])}catch(e){S.done.local=new Set}
+try{const l=JSON.parse(localStorage.getItem(LK)||"{}");S.items=l.items||{};S.done.local=new Set(l.done||[])}catch(e){S.done.local=new Set}
 if(!S.done.local)S.done.local=new Set;
-const saveLocal=()=>{try{localStorage.setItem(LK,JSON.stringify({items:S.items,react:S.react,done:[...S.done.local]}))}catch(e){}};
+const saveLocal=()=>{try{localStorage.setItem(LK,JSON.stringify({items:S.items,done:[...S.done.local]}))}catch(e){}};
 let q=Promise.resolve();const queue=f=>{q=q.then(f).catch(e=>{console.error(e);alert("Could not save. Check your connection and Firebase rules.")})};
 const SHOW_SUGGESTED=false; /* set to true to bring back the built-in sample items */
 function auto(d){if(!SHOW_SUGGESTED)return [];const n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5),o=[];for(let i=0;i<4;i++){o.push({t:ART[(n+i*3)%ART.length],ty:"a",tm:pad(7+i*3)+":00",auto:1});o.push({t:VID[(n*5+3+i*3)%VID.length],ty:"v",tm:pad(8+i*3)+":30",auto:1})}return o}
@@ -590,7 +562,6 @@ function drawList(){
   r.insertAdjacentHTML("beforeend",'<span class="tag '+x.ty+'">'+(x.ty==="a"?"Article":"Video")+"</span><div><b>"+title+"</b><small>"+fmt(x.tm)+(x.auto?" · Suggested":" · Added")+(x.to&&x.to.length?" · For "+esc(forLabel(x)):"")+(x.sr?" · ↻ repeats":"")+"</small></div>");
   {const la=r.querySelector("a");if(la){const mv=()=>{logOpen(id,x);if(!mine().has(id)){const c=r.querySelector("input[type=checkbox]");if(c&&!c.disabled)c.setAttribute("aria-label","Mark as engaged")}};la.addEventListener("click",mv);la.addEventListener("auxclick",mv)}}
   if(needOpen(x,id)&&!cb.disabled){const hn=document.createElement("small");hn.textContent="Open the link first";hn.style.color="var(--mute)";r.lastElementChild.appendChild(hn)}
-  r.lastElementChild.appendChild(rxEl(key(sel),id));
   if(!x.auto&&(!online||x.by===uid||canEditAll)){const bt=document.createElement("button");const ac=document.createElement("span"),eb=document.createElement("button");ac.className="acts";
   eb.type="button";eb.className="del";eb.textContent="Edit";eb.onclick=()=>{editKey=key(sel)+"#"+(x.id||x.i);drawList()};
   bt.className="del";bt.textContent="Remove";
@@ -601,50 +572,16 @@ function drawList(){
   ac.appendChild(eb);ac.appendChild(bt);r.appendChild(ac)}
   L.appendChild(r)})
 }
-let noteOpen=null;
 function streakOf(set,u){let n=0,d=new Date(today.getFullYear(),today.getMonth(),today.getDate());for(let i=0;i<120;i++){const its=items(d,u);if(its.length&&its.every(x=>set.has(iid(d,x))))n++;else if(i>0)break;d=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1)}return n}
 function allDone(){const its=items(sel),ids=its.map(x=>iid(sel,x)),full=ids.every(i=>mine().has(i));its.forEach(x=>{const i=iid(sel,x);if(full)mine().delete(i);else if(!needOpen(x,i))mine().add(i)});saveMine();render()}
-function setReact(k,id,p){const u=uid||"local",d=S.react[k]=S.react[k]||{},m=d[id]=d[id]||{},nx=Object.assign({e:"",n:""},m[u],p);m[u]=nx;
- if(online)queue(()=>db.doc("reactions/"+k).set({r:{[id]:{[u]:nx}}},{merge:true}));else saveLocal();render()}
-function rxEl(k,id){
- const w=document.createElement("div");w.className="rx";
- const R=(S.react[k]||{})[id]||{},u=uid||"local",my=R[u]||{};
- ["👍","🔥","💡"].forEach(e=>{const n=Object.values(R).filter(v=>v&&v.e===e).length,on=my.e===e,b=document.createElement("button");
-  b.type="button";b.className="rxb"+(on?" on":"");b.textContent=e+(n?" "+n:"");b.setAttribute("aria-pressed",on);b.setAttribute("aria-label","React "+e);
-  b.onclick=()=>setReact(k,id,{e:on?"":e});w.appendChild(b)});
- const nb=document.createElement("button");nb.type="button";nb.className="rxb";nb.textContent=my.n?"📝 Edit note":"📝 Note";
- nb.onclick=()=>{noteOpen=noteOpen===id?null:id;drawList()};w.appendChild(nb);
- Object.entries(R).forEach(([x,v])=>{if(v&&v.n){const t=document.createElement("div"),b=document.createElement("b");t.className="nt";b.textContent=(x===u?"You":(names[x]||"Someone"))+": ";t.appendChild(b);t.appendChild(document.createTextNode(v.n));w.appendChild(t)}});
- if(noteOpen===id){const f=document.createElement("div"),i=document.createElement("input"),sv=document.createElement("button");
-  f.className="ne";i.className="ni";i.maxLength=140;i.value=my.n||"";i.placeholder="One-line takeaway";i.setAttribute("aria-label","Your note");
-  sv.type="button";sv.textContent="Save";const save=()=>{noteOpen=null;setReact(k,id,{n:i.value.trim().slice(0,140)})};
-  sv.onclick=save;i.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();save()}};f.appendChild(i);f.appendChild(sv);w.appendChild(f);setTimeout(()=>i.focus(),0)}
- return w}
 let editKey=null;
 function updAssign(){const n=document.querySelectorAll("#assignList input:checked").length;document.getElementById("assignSum").textContent="Assign to: "+(n?n+" selected":"Everyone")}
 function peopleIds(){return [...new Set([...S.roster,uid])]}
 function fillAssign(box,chips,chk,cb,cls){
- box.innerHTML="";chips.innerHTML="";
+ box.innerHTML="";if(chips)chips.innerHTML="";
  [...new Set([...peopleIds(),...chk])].forEach(u=>{const l=document.createElement("label"),i=document.createElement("input");l.className="ck";i.type="checkbox";i.value=u;i.checked=chk.has(u);if(cls)i.className=cls;i.onchange=cb;
-  l.appendChild(i);l.appendChild(document.createTextNode((names[u]||"Member")+(u===uid?" (you)":"")));box.appendChild(l)});
- Object.values(S.groups).forEach(g=>{const b=document.createElement("button");b.type="button";b.className="rxb"+(cls?" "+cls:"");b.textContent="👥 "+g.name;b.setAttribute("aria-label","Toggle group "+g.name);
-  b.onclick=()=>{const bx=[...box.querySelectorAll("input")].filter(i=>g.m.includes(i.value)),all=bx.length>0&&bx.every(i=>i.checked);bx.forEach(i=>{i.checked=!all});cb()};chips.appendChild(b)})}
-function grpMeta(to){const st=new Set(to),gs=Object.values(S.groups).filter(g=>g.m.length&&g.m.every(u=>st.has(u))),cov=new Set();gs.forEach(g=>g.m.forEach(u=>cov.add(u)));return{gn:gs.map(g=>g.name),gx:to.filter(u=>!cov.has(u)).length}}
-function forLabel(x){return x.gn&&x.gn.length?x.gn.join(", ")+(x.gx?" +"+x.gx:""):x.to.map(z=>z===ME?"you":(names[z]||"member")).join(", ")}
-function updGrp(){const n=document.querySelectorAll("#grpMembers input:checked").length;document.getElementById("grpSum").textContent="Members: "+(n?n+" selected":"none")}
-function drawGroups(){
- const L=document.getElementById("groupList"),gm=document.getElementById("grpMembers"),chk=new Set([...gm.querySelectorAll("input:checked")].map(i=>i.value));
- gm.innerHTML="";
- peopleIds().forEach(u=>{const l=document.createElement("label"),i=document.createElement("input");l.className="ck";i.type="checkbox";i.value=u;i.checked=chk.has(u);i.onchange=updGrp;
-  l.appendChild(i);l.appendChild(document.createTextNode((names[u]||"Member")+(u===uid?" (you)":"")));gm.appendChild(l)});
- updGrp();L.innerHTML="";
- const es=Object.entries(S.groups);
- if(!es.length){L.innerHTML='<div class="empty">No groups yet. Make one below, then tap it when assigning items.</div>';return}
- es.forEach(([id,g])=>{const r=document.createElement("div"),n=document.createElement("div"),sm=document.createElement("small"),b=document.createElement("button");
-  r.className="who";n.className="nm";n.textContent=g.name;sm.textContent=g.m.map(u=>names[u]||"Member").join(", ")||"No members";n.appendChild(sm);
-  b.type="button";b.className="del";b.textContent="Delete";b.setAttribute("aria-label","Delete group "+g.name);
-  b.onclick=()=>{if(confirm('Delete group "'+g.name+'"? Items already assigned keep their people.'))queue(()=>db.doc("groups/"+id).delete())};
-  r.appendChild(n);r.appendChild(b);L.appendChild(r)})}
+  l.appendChild(i);l.appendChild(document.createTextNode((names[u]||"Member")+(u===uid?" (you)":"")));box.appendChild(l)});}
+function forLabel(x){return x.to.map(z=>z===ME?"you":(names[z]||"member")).join(", ")}
 function drawMembers(){
  const L=document.getElementById("memberList");if(!L)return;L.innerHTML="";
  const ids=peopleIds().sort((a,b)=>(names[a]||"~").localeCompare(names[b]||"~"));
@@ -656,8 +593,8 @@ function drawMembers(){
    const w=document.createElement("div"),mk=(t,l)=>{const b=document.createElement("button");b.type="button";b.className="del";b.textContent=t;b.setAttribute("aria-label",l+" "+nm);return b},
     ab=mk(isA?"Remove admin":"Make admin",isA?"Remove admin from":"Make admin"),rb=mk("Remove","Remove member");
    w.style.cssText="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end";
-   ab.onclick=()=>{if(confirm((isA?"Remove admin rights from ":"Make admin: ")+nm+"?"))queue(()=>db.doc("members/"+u).update({admin:!isA}))};
-   rb.onclick=()=>{if(confirm('Remove "'+nm+'" from the team? Their progress is deleted. If they open the app again they rejoin as a new member.'))queue(async()=>{await db.doc("done/"+u).delete();await db.doc("members/"+u).delete()})};
+   ab.onclick=()=>{if(confirm((isA?"Remove admin rights from ":"Make admin: ")+nm+"?"))queue(async()=>{await db.doc("members/"+u).update({admin:!isA});window.__loadMembers&&window.__loadMembers()})};
+   rb.onclick=()=>{if(confirm('Remove "'+nm+'" from the team? Their progress is deleted. If they open the app again they rejoin as a new member.'))queue(async()=>{await db.doc("done/"+u).delete();await db.doc("members/"+u).delete();window.__loadMembers&&window.__loadMembers()})};
    w.appendChild(ab);w.appendChild(rb);r.appendChild(w)}
   L.appendChild(r)})}
 function drawAdmin(){
@@ -665,13 +602,7 @@ function drawAdmin(){
  document.getElementById("admin").hidden=!on;document.getElementById("adminAdd").hidden=!on;
  if(!on)return;
  const box=document.getElementById("assignList"),chk=new Set([...box.querySelectorAll("input:checked")].map(i=>i.value));
- fillAssign(box,document.getElementById("assignGroups"),chk,updAssign);updAssign();drawMembers();drawGroups()}
-document.getElementById("grpForm").addEventListener("submit",e=>{e.preventDefault();
- if(!online||!canEditAll)return;
- const nm=document.getElementById("grpName").value.trim().slice(0,30),m=[...document.querySelectorAll("#grpMembers input:checked")].map(i=>i.value);
- if(!nm||!m.length){alert("Give the group a name and pick at least one member.");return}
- const ex=Object.entries(S.groups).find(([id,g])=>g.name.toLowerCase()===nm.toLowerCase()),id=ex?ex[0]:"g"+Date.now().toString(36);
- queue(()=>db.doc("groups/"+id).set({name:nm,m}));e.target.reset();updGrp()});
+ fillAssign(box,null,chk,updAssign);updAssign();drawMembers()}
 function editRow(x){
  const k=key(sel),r=document.createElement("div"),f=document.createElement("div"),row=document.createElement("div"),bar=document.createElement("div"),adm=online&&canEditAll;
  r.className="item";f.className="ef";row.className="row";bar.className="ne";
@@ -688,41 +619,12 @@ function editRow(x){
   sc.innerHTML='<option value="one">Apply to: only this day</option><option value="all">Apply to: this and all later days</option>';f.appendChild(sc)}
  sv.onclick=()=>{const nt=t.value.trim(),l=S.items[k]||[],o=findIt(k,x);if(!nt||!o)return;const nu=u.value.trim(),
    ch={t:nt,u:/^https?:\/\//.test(nu)?nu:"",tm:tm.value,ty:ty.value},to=abox?[...abox.querySelectorAll("input:checked")].map(i=>i.value):null,
-   apply=it=>{const n=Object.assign({},it,ch);if(!it.id)n.id=it.ty+"_"+hash(it.t);if(to){delete n.to;delete n.gn;delete n.gx;if(to.length){n.to=to;const g=grpMeta(to);if(g.gn.length){n.gn=g.gn;n.gx=g.gx}}}return n};
+   apply=it=>{const n=Object.assign({},it,ch);if(!it.id)n.id=it.ty+"_"+hash(it.t);if(to){delete n.to;delete n.gn;delete n.gx;if(to.length)n.to=to}return n};
   if(o.sr&&sc&&sc.value==="all"){Object.keys(S.items).filter(z=>z>=k).forEach(z=>{if((S.items[z]||[]).some(y=>y.sr===o.sr))mutate(z,l=>l.map(y=>y.sr===o.sr?apply(y):y))})}
   else{mutate(k,l=>l.map(y=>sameItem(y,o)?apply(y):y))}
   editKey=null;render()};
  cn.onclick=()=>{editKey=null;drawList()};
  bar.appendChild(sv);bar.appendChild(cn);f.appendChild(bar);r.appendChild(f);setTimeout(()=>t.focus(),0);return r}
-function csvDl(dts,name){
- const us=peopleIds(),q=v=>{v=String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'},rows=[["Member","Date","Items","Done","Percent"]];
- us.forEach(u=>{const set=S.done[u]||new Set;dts.forEach(dt=>{const ids=items(dt,u).map(x=>iid(dt,x)),n=ids.filter(i=>set.has(i)).length;
-  if(ids.length)rows.push([names[u]||"Member",key(dt),ids.length,n,Math.round(100*n/ids.length)])})});
- const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+rows.map(r=>r.map(q).join(",")).join("\r\n")],{type:"text/csv"}));
- a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
-document.getElementById("csvBtn").onclick=()=>{const y=sel.getFullYear(),mo=sel.getMonth(),dim=new Date(y,mo+1,0).getDate(),d=[];for(let i=1;i<=dim;i++)d.push(new Date(y,mo,i));csvDl(d,"engagement-"+key(sel).slice(0,7)+".csv")};
-document.getElementById("csvWkBtn").onclick=()=>{const s0=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()-sel.getDay()),d=[];for(let i=0;i<7;i++)d.push(new Date(s0.getFullYear(),s0.getMonth(),s0.getDate()+i));csvDl(d,"engagement-week-"+key(s0)+".csv")};
-document.getElementById("opensBtn").onclick=async e=>{
- const btn=e.currentTarget,t0=btn.textContent;if(!online||!canEditAll)return;btn.disabled=true;btn.textContent="Loading...";
- try{const snap=await db.collection("opens").get(),q=v=>{v=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'},
-  rows=[["Member","Date","Item","Link","Opened at","Checked done"]];
-  snap.docs.forEach(d=>{const u=d.id,o=(d.data()||{}).o||{},set=S.done[u]||new Set;
-   Object.keys(o).forEach(id=>{const v=o[id]||{};rows.push([names[u]||"Member",id.slice(0,10),v.t||"",v.u||"",v.at?new Date(v.at).toLocaleString("en-CA",{hour12:false}):"",set.has(id)?"Yes":"No"])})});
-  rows.sort((a,b)=>String(a[1]).localeCompare(String(b[1]))||String(a[0]).localeCompare(String(b[0])));
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+rows.map(r=>r.map(q).join(",")).join("\r\n")],{type:"text/csv"}));
-  a.download="link-opens-"+key(today)+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-  if(rows.length<2)alert("No one has opened a link yet.")}
- catch(er){console.error(er);alert("Could not load. Check your Firebase rules for the opens collection.")}
- btn.disabled=false;btn.textContent=t0};
-document.getElementById("sumBtn").onclick=async e=>{
- const btn=e.currentTarget,D=d=>d.toLocaleDateString("en",{month:"short",day:"numeric"}),us=[...new Set([...S.roster,uid])],ds=[];
- for(let i=6;i>=0;i--)ds.push(new Date(today.getFullYear(),today.getMonth(),today.getDate()-i));
- const st=us.map(u=>{const set=S.done[u]||new Set;let t=0,n=0;ds.forEach(dt=>items(dt,u).forEach(x=>{t++;if(set.has(iid(dt,x)))n++}));
-  return{name:names[u]||"Member",p:t?Math.round(100*n/t):0,t,s:streakOf(set,u)}}).filter(r=>r.t).sort((a,b)=>b.p-a.p);
- const f=a=>a.map(r=>r.name+" ("+r.p+"%)").join(", ")||"-",avg=st.length?Math.round(st.reduce((a,r)=>a+r.p,0)/st.length):0;
- const txt="Engagement summary, "+D(ds[0])+" to "+D(ds[6])+"\nTeam average: "+avg+"%\nTop: "+f(st.filter(r=>r.p>0).slice(0,3))+"\nNeeds a nudge (under 50%): "+f(st.filter(r=>r.p<50).reverse())+"\nStreaks: "+(st.filter(r=>r.s>=2).map(r=>r.name+" "+r.s+" days").join(", ")||"-");
- const o=document.getElementById("adminOut");o.hidden=false;o.value=txt;
- try{await navigator.clipboard.writeText(txt);btn.textContent="Copied ✓";setTimeout(()=>btn.textContent="Copy weekly summary",2000)}catch(err){o.select()}};
 let canEditAll=false,tok=0;
 async function drawTeam(){
  const T=document.getElementById("team"),my=++tok;
@@ -736,8 +638,8 @@ async function drawTeam(){
  const wDts=[];for(let i=0;i<7;i++)wDts.push(new Date(today.getFullYear(),today.getMonth(),today.getDate()-i));
  const tid=(u,ds)=>{const o=[];ds.forEach(dt=>items(dt,u).forEach(x=>o.push(iid(dt,x))));return o};
  const rows=ids.map(u=>{const set=S.done[u]||new Set,dI=tid(u,[sel]),mI=tid(u,mDts),wI=tid(u,wDts),c=a=>a.filter(i=>set.has(i)).length;return{u,n:c(dI),dt:dI.length,m:c(mI),mt:mI.length,w:c(wI),wt:wI.length,st:streakOf(set,u),name:(names[u]||"Someone")+(u===uid?" (you)":"")}});
- const medals=["🥇","🥈","🥉","4","5"],gof=u=>Object.values(S.groups||{}).filter(g=>g&&(g.m||[]).includes(u)).map(g=>g.name),top=rows.filter(r=>r.w>0).sort((a,b)=>b.w-a.w).slice(0,5),
-  lb=top.length?"<h3>Top engagers · last 7 days</h3>"+top.map((r,i)=>`<div class="who"><span class="medal">${medals[i]}</span><div class="nm">${esc(r.name)}<small>${r.w} of ${r.wt} items</small><small style="display:block">👥 ${esc(gof(r.u).join(", ")||"No group")}</small></div><div class="bar"><i style="width:${Math.round(100*r.w/Math.max(1,r.wt))}%"></i></div></div>`).join(""):"<h3>Top engagers · last 7 days</h3><div class=\"empty\">No one has engaged yet this week. Tick an item and the top 5 will show up here.</div>";
+ const medals=["🥇","🥈","🥉","4","5"],top=rows.filter(r=>r.w>0).sort((a,b)=>b.w-a.w).slice(0,5),
+  lb=top.length?"<h3>Top engagers · last 7 days</h3>"+top.map((r,i)=>`<div class="who"><span class="medal">${medals[i]}</span><div class="nm">${esc(r.name)}<small>${r.w} of ${r.wt} items</small></div><div class="bar"><i style="width:${Math.round(100*r.w/Math.max(1,r.wt))}%"></i></div></div>`).join(""):"<h3>Top engagers · last 7 days</h3><div class=\"empty\">No one has engaged yet this week. Tick an item and the top 5 will show up here.</div>";
  const grp=(title,f,cls,label)=>{const g=rows.filter(f);return g.length?"<h3>"+title+" ("+g.length+")</h3>"+g.map(r=>'<div class="who"><div class="nm">'+esc(r.name)+(r.st>=2?`<span class="bdg" title="${r.st}-day streak">${r.st>=30?"🏆":r.st>=7?"⭐":"🔥"} ${r.st}</span>`:"")+"<small>Month: "+r.m+" of "+r.mt+"</small></div><div class=\"bar\"><i style=\"width:"+Math.round(100*r.n/Math.max(1,r.dt))+'%"></i></div><span class="pill '+cls+'">'+label(r)+"</span></div>").join(""):""};
  T.innerHTML=lb+grp("Not engaged yet",r=>r.dt>0&&r.n===0,"no",r=>"0/"+r.dt)+grp("In progress",r=>r.n>0&&r.n<r.dt,"mid",r=>r.n+"/"+r.dt)+grp("All done",r=>r.dt>0&&r.n>=r.dt,"ok",r=>"Done")||'<div class="empty">No members yet.</div>';
 }
@@ -769,7 +671,7 @@ document.getElementById("add").addEventListener("submit",e=>{e.preventDefault();
  const add={},seenU=new Set;let skipped=0;document.getElementById("t").value.split("\n").map(l=>l.trim()).filter(Boolean).forEach((l,li)=>{let t,u,lty=ty;const raw=l.split("|").map(z=>z.trim());
   if(raw.length===1&&/^https?:\/\/\S+$/.test(raw[0])){u=raw[0];const g=autoItem(u);t=g.t;if(g.ty)lty=g.ty}else{t=raw[0];u=raw[1]}
   if(u&&seenU.has(u)){skipped++;return}if(u)seenU.add(u);
-  dts.forEach((dt,di)=>{const kk=key(dt);if(u&&(S.items[kk]||[]).some(z=>z.u===u)){if(!di)skipped++;return}const it={t,ty:lty,tm,u:/^https?:\/\//.test(u||"")?u:"",by:uid||"local"};if(!di)it.at=Date.now();if(to.length){it.to=to;const gm=grpMeta(to);if(gm.gn.length){it.gn=gm.gn;it.gx=gm.gx}}if(rp)it.sr=sr0+"-"+li;it.id=newId();(add[kk]=add[kk]||[]).push(it)})});
+  dts.forEach((dt,di)=>{const kk=key(dt);if(u&&(S.items[kk]||[]).some(z=>z.u===u)){if(!di)skipped++;return}const it={t,ty:lty,tm,u:/^https?:\/\//.test(u||"")?u:"",by:uid||"local"};if(!di)it.at=Date.now();if(to.length)it.to=to;if(rp)it.sr=sr0+"-"+li;it.id=newId();(add[kk]=add[kk]||[]).push(it)})});
  Object.keys(add).forEach(kk=>mutate(kk,l=>l.concat(add[kk])));e.target.reset();render();if(skipped)alert("Skipped "+skipped+" link"+(skipped>1?"s":"")+" already added.")});
 render();
 (async()=>{
@@ -778,17 +680,17 @@ render();
  try{uid=await user.id()}catch(e){}
  if(!uid)return;
  try{const w=await user.can("data.write");canW=w!==false;canEditAll=await user.canEdit()}catch(e){}
- online=true;ME=uid;S.items={};S.done={};S.react={};S.groups={};S.admins=new Set;
+ online=true;ME=uid;S.items={};S.done={};S.admins=new Set;
  const bad=e=>console.error(e);
  db.collection("items").onSnapshot(s=>{S.items={};s.docs.forEach(d=>S.items[d.id]=d.data().list||[]);render()},bad);
  db.doc("opens/"+uid).onSnapshot(s=>{const o=(s.data()||{}).o||{};Object.keys(o).forEach(i=>{OPENED.add(i);VIS.add(i)});try{localStorage.setItem(VK,JSON.stringify([...VIS]))}catch(e){}render()},bad);
  db.collection("done").onSnapshot(s=>{S.done={};s.docs.forEach(d=>S.done[d.id]=new Set(d.data().ids||[]));render()},bad);
- db.collection("members").onSnapshot(s=>{S.roster=s.docs.map(d=>d.id);S.admins=new Set(s.docs.filter(d=>(d.data()||{}).admin===true).map(d=>d.id));s.docs.forEach(d=>{const n=(d.data()||{}).name;if(n)names[d.id]=n});if(uid)canEditAll=S.admins.has(uid);render()},bad);
- db.collection("groups").onSnapshot(s=>{S.groups={};s.docs.forEach(d=>{const v=d.data()||{};S.groups[d.id]={name:v.name||"Group",m:Array.isArray(v.m)?v.m:[]}});render()},bad);
- db.collection("reactions").onSnapshot(s=>{S.react={};s.docs.forEach(d=>S.react[d.id]=d.data().r||{});render()},bad);
+ const loadMembers=async()=>{try{const s=await db.collection("members").get();S.roster=s.docs.map(d=>d.id);S.admins=new Set(s.docs.filter(d=>(d.data()||{}).admin===true).map(d=>d.id));s.docs.forEach(d=>{const n=(d.data()||{}).name;if(n)names[d.id]=n});if(uid)canEditAll=S.admins.has(uid);render()}catch(e){bad(e)}};
+ window.__loadMembers=loadMembers;
  try{const n=(await user.me()).name;if(n)names[uid]=n}catch(e){}
  render();
- if(window.__chatStart)window.__chatStart();if(canW)try{const m=db.doc("members/"+uid);if(!(await m.get()).exists)await m.set({joined:Date.now()})}catch(e){bad(e)}
+ if(canW)try{const m=db.doc("members/"+uid);if(!(await m.get()).exists)await m.set({joined:Date.now()})}catch(e){bad(e)}
+ loadMembers();
 })();
 </script>
 <script>
@@ -825,70 +727,6 @@ if(typeof render==="function"){var _r=render;render=function(){var res=_r.apply(
 addEventListener("resize",function(){place(false)});
 addEventListener("load",function(){place(false)});
 tidy();requestAnimationFrame(function(){place(false)});
-})();
-</script>
-<script>
-(function(){
-var box=document.getElementById("msgs"),inp=document.getElementById("chatIn"),go=document.getElementById("chatGo"),form=document.getElementById("chatForm");
-var rows=[],started=false,stick=true,pend="";
-var pic=document.getElementById("chatPic"),pf=document.getElementById("chatFile");
-pic.onclick=function(){if(pend){pend="";pic.textContent="📎";inp.placeholder="Write a message...";return}pf.click()};
-pf.onchange=function(){var f=pf.files&&pf.files[0];pf.value="";if(!f)return;
- if(!/^image\//.test(f.type)){alert("Only images or GIFs can be uploaded. For Google Sheets and other files, paste the share link.");return}
- var done=function(d){pend=d;pic.textContent="✕";inp.placeholder="Image ready. Add a caption or tap Send.";inp.focus()};
- if(f.type==="image/gif"){if(f.size>600*1024){alert("This GIF is too big (max 600 KB). Paste a link to it instead, like a Giphy or Tenor link.");return}
-  var rd=new FileReader();rd.onload=function(){done(String(rd.result))};rd.readAsDataURL(f);return}
- var url=URL.createObjectURL(f),im=new Image();
- im.onload=function(){var sc=1280,q=.82,out="";
-  for(var n=0;n<6;n++){var r=Math.min(1,sc/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*r));c.height=Math.max(1,Math.round(im.height*r));
-   var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);out=c.toDataURL("image/jpeg",q);
-   if(out.length<800*1024)break;sc=Math.round(sc*.75);q=Math.max(.5,q-.07)}
-  URL.revokeObjectURL(url);if(out.length>=900*1024){alert("Could not shrink this image enough. Paste a link instead.");return}done(out)};
- im.onerror=function(){URL.revokeObjectURL(url);alert("Could not read that image.")};im.src=url};
-function linkLabel(u){var x;try{x=new URL(u)}catch(e){return u}var h=x.hostname,pt=x.pathname;
- if(h==="docs.google.com"){if(pt.indexOf("/spreadsheets")===0)return"📊 Google Sheet";if(pt.indexOf("/document")===0)return"📄 Google Doc";if(pt.indexOf("/presentation")===0)return"📽 Google Slides";if(pt.indexOf("/forms")===0)return"📝 Google Form"}
- if(h==="drive.google.com")return"📁 Google Drive file";
- if(h==="forms.gle")return"📝 Google Form";
- var t=h+(pt==="/"?"":pt);return t.length>42?t.slice(0,40)+"…":t}
-function isImgUrl(u){var x;try{x=new URL(u)}catch(e){return false}
- return /\.(gif|png|jpe?g|webp)$/i.test(x.pathname)||/^(media\d*\.giphy\.com|i\.giphy\.com|media\.tenor\.com|c\.tenor\.com|i\.imgur\.com|encrypted-tbn\d\.gstatic\.com)$/.test(x.hostname)}
-function addText(p,text){var re=/https?:\/\/[^\s<>"']+/g,last=0,m,imgs=[];
- while((m=re.exec(text))){var url=m[0].replace(/[.,!?;:)\]]+$/,"");
-  if(m.index>last)p.appendChild(document.createTextNode(text.slice(last,m.index)));
-  var a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=linkLabel(url);p.appendChild(a);
-  if(isImgUrl(url))imgs.push(url);
-  last=m.index+url.length;re.lastIndex=last}
- if(last<text.length)p.appendChild(document.createTextNode(text.slice(last)));
- return imgs}
-function addImg(m,src){var i=document.createElement("img");i.src=src;i.loading="lazy";i.alt="Shared image";i.referrerPolicy="no-referrer";m.appendChild(i)}
-function when(t){var d=new Date(t);return d.toLocaleTimeString("en",{hour:"numeric",minute:"2-digit"})}
-async function draw(){
- var ids=[...new Set(rows.map(function(r){return r.u}))];
- var need=ids.filter(function(i){return !names[i]&&!triedNames.has(i)});if(user&&need.length){need.forEach(function(i){triedNames.add(i)});try{var ps=await user.profiles(need);need.forEach(function(i){if(!names[i])names[i]=(ps[i]&&ps[i].name)||""})}catch(e){}}
- var near=box.scrollHeight-box.scrollTop-box.clientHeight<80;
- box.textContent="";
- if(!rows.length){var e=document.createElement("div");e.className="empty";e.textContent="No messages yet. Say hi!";box.appendChild(e);return}
- rows.forEach(function(r){
-  var m=document.createElement("div");m.className="m"+(r.u===uid?" me":"");
-  var sm=document.createElement("small");sm.textContent=(r.u===uid?"You":(names[r.u]||"Someone"))+" · "+when(r.ts);
-  if(r.u===uid||canEditAll){var x=document.createElement("button");x.className="x";x.type="button";x.textContent="delete";x.setAttribute("aria-label","Delete message");x.onclick=function(){db.doc("chat/"+r.id).delete().catch(function(err){console.error(err)})};sm.appendChild(x)}
-  var p=document.createElement("p"),imgs=addText(p,r.text);
-  m.appendChild(sm);if(r.text)m.appendChild(p);imgs.forEach(function(u){addImg(m,u)});if(/^data:image\/(gif|png|jpe?g|webp);base64,/.test(r.img))addImg(m,r.img);box.appendChild(m)});
- if(near||stick){box.scrollTop=box.scrollHeight;stick=false}
-}
-function start(){
- if(started)return;started=true;stick=true;
- inp.disabled=!canW;go.disabled=!canW;pic.disabled=!canW;inp.placeholder=canW?"Write a message...":"View only: you can't send messages";
- db.collection("chat").orderBy("ts","desc").limit(100).onSnapshot(function(s){
-  rows=s.docs.map(function(d){var v=d.data()||{};return{id:d.id,u:v.u,text:String(v.text||""),img:String(v.img||""),ts:+v.ts||0}}).sort(function(a,b){return a.ts-b.ts});draw()},function(e){console.error(e)});
-}
-form.addEventListener("submit",function(e){
- e.preventDefault();var t=inp.value.trim(),im=pend;if((!t&&!im)||!online||!canW)return;
- var ts=Date.now(),doc={u:uid,text:t.slice(0,500),ts:ts};if(im)doc.img=im;
- inp.value="";pend="";pic.textContent="📎";inp.placeholder="Write a message...";stick=true;
- db.doc("chat/"+uid+"_"+ts).set(doc).catch(function(err){console.error(err);inp.value=t;if(im){pend=im;pic.textContent="✕"}alert("Could not send. Check your connection and Firebase rules.")});
-});
-window.__chatStart=function(){if(online&&db)start()};window.__chatStart();
 })();
 </script>
 <script>
@@ -1129,7 +967,7 @@ function mk(has){return[
 {t:"4. Then tick the box",x:"After you have opened the link, tick the box to mark it done. It won't let you tick before opening the link.",e:"#list .item input[type=checkbox]",n:1},
 {t:"Watch your progress",x:"The ring shows how much you finished today, plus your streak. Finish everything and that day's pin gets a green \u2713.",e:"#sum"},
 {t:"Missed a day?",x:"These shortcuts show past days that still have items for you. Tap one to jump straight there.",e:"#notif .chips|#notif"},
-{t:"Team & chat \uD83D\uDCAC",x:"See who has engaged, and chat with everyone at the bottom of the page. You're ready: open today's first link!",e:".team .head"}
+{t:"Team \uD83D\uDC65",x:"See who has engaged at the bottom of the page. You're ready: open today's first link!",e:".team .head"}
 ].filter(function(s){return has||!s.n})}
 function sc(el,v){if(el._v!==v){el._v=v;el.style.cssText=v}}
 function place(){
@@ -1179,7 +1017,7 @@ drawBanner();
 </script>
 <script>
 (function(){
-var $=function(i){return document.getElementById(i)},KS="engage-sound",ctx=null,t1=0,seen=null,seenM=null;
+var $=function(i){return document.getElementById(i)},KS="engage-sound",ctx=null,t1=0,seen=null;
 var on=true;try{on=localStorage.getItem(KS)!=="off"}catch(e){}
 function unlock(){try{if(!ctx){var A=window.AudioContext||window.webkitAudioContext;if(A)ctx=new A()}if(ctx&&ctx.state==="suspended")ctx.resume()}catch(e){}}
 ["pointerdown","keydown","touchstart"].forEach(function(e){addEventListener(e,unlock,{passive:true})});
@@ -1195,12 +1033,6 @@ function scan(){
  if(settled()&&seen&&fresh)chime();
  if(online&&(!seen||settled()||!t1||Date.now()-t1<=3000))seen=ids}
 var _r=render;render=function(){var res=_r.apply(this,arguments);try{scan()}catch(e){}return res};
-var box=$("msgs");
-if(box)new MutationObserver(function(){
- var cur=new Set();box.querySelectorAll(".m:not(.me)").forEach(function(m){cur.add(m.textContent)});
- var fresh=false;if(seenM)cur.forEach(function(k){if(!seenM.has(k))fresh=true});
- if(settled()&&fresh)chime();
- seenM=cur}).observe(box,{childList:true});
 var _b=drawBanner;drawBanner=function(){_b();var b=$("banner");if(!b)return;var h=document.createElement("button");h.type="button";
  h.textContent=on?"\uD83D\uDD14 Sound on":"\uD83D\uDD15 Sound off";h.setAttribute("aria-pressed",on);h.style.cssText="font-size:.78rem;padding:3px 11px";
  h.onclick=function(){on=!on;try{localStorage.setItem(KS,on?"on":"off")}catch(e){}if(on)chime(true);drawBanner()};b.appendChild(h)};
