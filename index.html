@@ -992,7 +992,7 @@ var F={
 var st={p:"bw",c:{},f:"default",bw:true};
 try{var sv=JSON.parse(localStorage.getItem(KEY)||"null");if(sv&&P[sv.p]){st.p=sv.p;st.c=sv.c||{};st.f=F[sv.f]?sv.f:"default";st.bw=sv.bw!==false}}catch(e){}
 var img=document.querySelector(".hero img"),origSrc=img?img.getAttribute("src"):"";
-function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}pushShared()}
 function hx(h){h=h.replace("#","");return[0,2,4].map(function(i){return parseInt(h.substr(i,2),16)})}
 function lum(h){var c=hx(h).map(function(v){v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
 function ink(h){return lum(h)>.4?"#111111":"#ffffff"}
@@ -1031,7 +1031,7 @@ function build(){
   h+='</select></label></div></div><div><h3>Picture</h3><div class="rw"><button type="button" class="go" id="lkP">Choose photo</button><input type="file" id="lkFile" accept="image/*" hidden><button type="button" class="plain" id="lkRP">Reset photo</button>'+
    '<label class="ck"><input type="checkbox" id="lkBW"'+(st.bw?" checked":"")+'>Black &amp; white photo</label></div></div>'+
    '<div class="rw"><button type="button" class="plain" id="lkAll">Reset everything</button></div>'+
-   '<p class="nt">Your choices are saved on your own device. Everyone can set their own look.</p></div>';
+   '<p class="nt">'+(sync?"Changes here are saved for everyone and everyone will see them.":"Changes are saved on this device only (not connected).")+'</p></div>';
  }
  box.innerHTML=h;
 }
@@ -1043,8 +1043,8 @@ box.addEventListener("click",function(e){
  if(t.dataset.p){st.p=t.dataset.p;st.c={};save();apply();build();return}
  if(t.id==="lkRC"){st.c={};save();apply();build();return}
  if(t.id==="lkP"){document.getElementById("lkFile").click();return}
- if(t.id==="lkRP"){try{localStorage.removeItem(PK)}catch(x){}setPhoto(origSrc);return}
- if(t.id==="lkAll"){st={p:"bw",c:{},f:"default",bw:true};save();try{localStorage.removeItem(PK)}catch(x){}setPhoto(origSrc);apply();build()}
+ if(t.id==="lkRP"){try{localStorage.removeItem(PK)}catch(x){}setPhoto(origSrc);sharePhoto("");return}
+ if(t.id==="lkAll"){st={p:"bw",c:{},f:"default",bw:true};save();try{localStorage.removeItem(PK)}catch(x){}setPhoto(origSrc);sharePhoto("");apply();build()}
 });
 box.addEventListener("input",function(e){
  var t=e.target;
@@ -1056,12 +1056,44 @@ box.addEventListener("change",function(e){
  else if(t.id==="lkBW"){st.bw=t.checked;save();apply()}
  else if(t.id==="lkFile"&&t.files&&t.files[0]){
   var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){
-   var W=Math.min(1000,im.width),H=Math.round(im.height*W/im.width),cv=document.createElement("canvas");cv.width=W;cv.height=H;cv.getContext("2d").drawImage(im,0,0,W,H);
-   var u=cv.toDataURL("image/jpeg",.82);setPhoto(u);try{localStorage.setItem(PK,u)}catch(x){alert("Photo applied, but it is too large to save for next time.")}
+   var W=Math.min(900,im.width),H=Math.round(im.height*W/im.width),cv=document.createElement("canvas");cv.width=W;cv.height=H;cv.getContext("2d").drawImage(im,0,0,W,H);
+   var q=.8,u=cv.toDataURL("image/jpeg",q);while(u.length>700000&&q>.3){q-=.1;u=cv.toDataURL("image/jpeg",q)}if(u.length>900000){alert("That photo is too large. Try a smaller one.");return}setPhoto(u);try{localStorage.setItem(PK,u)}catch(x){}sharePhoto(u)
   };im.onerror=function(){alert("Could not read that image.")};im.src=fr.result};fr.readAsDataURL(t.files[0]);t.value="";
  }
 });
 apply();loadPhoto();build();
+var sync=false,lastEdit=0,wt=0,warned=false;
+function fail(e){console.error(e);if(!warned){warned=true;alert("Could not save the look for everyone. Check the Firebase rules for the 'look' collection.")}}
+function pushShared(){
+ if(!sync)return;lastEdit=Date.now();clearTimeout(wt);
+ wt=setTimeout(function(){db.doc("look/shared").set({p:st.p,c:st.c,f:st.f,bw:st.bw,ts:Date.now()}).catch(fail)},500);
+}
+function sharePhoto(u){
+ if(!sync)return;lastEdit=Date.now();
+ (u?db.doc("look/photo").set({img:u,ts:Date.now()}):db.doc("look/photo").delete()).catch(fail);
+}
+function pull(d){
+ if(!d||!P[d.p])return;
+ st.p=d.p;st.c=d.c||{};st.f=F[d.f]?d.f:"default";st.bw=d.bw!==false;
+ try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
+ apply();if(open&&!box.contains(document.activeElement))build();
+}
+function startSync(){
+ if(sync)return;sync=true;
+ if(typeof canW!=="undefined"&&!canW)box.hidden=true;
+ db.doc("look/shared").onSnapshot(function(s){
+  if(s.metadata.hasPendingWrites||Date.now()-lastEdit<2500)return;
+  if(s.exists)pull(s.data());
+ },function(e){console.error(e)});
+ db.doc("look/photo").onSnapshot(function(s){
+  if(s.metadata.hasPendingWrites||Date.now()-lastEdit<2500)return;
+  var u=s.exists?String((s.data()||{}).img||""):"";
+  if(/^data:image\//.test(u)){setPhoto(u);try{localStorage.setItem(PK,u)}catch(e){}}
+  else{setPhoto(origSrc);try{localStorage.removeItem(PK)}catch(e){}}
+ },function(e){console.error(e)});
+ if(open)build();
+}
+var iv=setInterval(function(){try{if(online&&db){clearInterval(iv);startSync()}}catch(e){}},500);
 })();
 </script>
 </body>
