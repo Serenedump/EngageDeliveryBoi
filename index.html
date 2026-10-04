@@ -1132,10 +1132,16 @@ var det=$('scDet'),swb=$('scSw'),pt=$('scPt'),sq=$('scSq'),msg=$('scMsg'),nmc=$(
 
 function rgba(h,a){var n=parseInt(h.slice(1),16);return 'rgba('+(n>>16&255)+','+(n>>8&255)+','+(n&255)+','+a+')'}
 function stats(){
- var d=sel,all=items(d),a=0,v=0,da=0,dv=0;
- all.forEach(function(x){var dn=mine().has(iid(d,x));if(x.ty==='a'){a++;if(dn)da++}else{v++;if(dn)dv++}});
- var dots=all.map(function(x){return mine().has(iid(d,x))});
- return {d:d,tot:all.length,dn:da+dv,na:a,nv:v,da:da,dv:dv,dots:dots,sn:streakOf(mine())};
+ var a=0,v=0,da=0,dv=0,dots=[],tk=key(today);
+ Object.keys(S.items).sort().forEach(function(k){
+  if(k>tk)return;
+  var p=k.split('-'),d=new Date(+p[0],p[1]-1,+p[2]);
+  items(d).forEach(function(x){
+   var dn=mine().has(iid(d,x));dots.push(dn);
+   if(x.ty==='a'){a++;if(dn)da++}else{v++;if(dn)dv++}
+  });
+ });
+ return {d:today,tot:a+v,dn:da+dv,na:a,nv:v,da:da,dv:dv,dots:dots,sn:streakOf(mine())};
 }
 function who(){try{return (typeof names!=='undefined'&&uid&&names[uid])||'Member'}catch(e){return 'Member'}}
 
@@ -1164,7 +1170,7 @@ function drawCard(){
  if(!img)for(i=0;i<10;i++){x.beginPath();x.arc(cx,cy,R+50+i*34,0,7);x.stroke()}
  x.textAlign='center';x.fillStyle=T.fg;
  x.font='bold '+F(44)+'px '+serif;x.fillText("WILL ASHLEY'S ENGAGEMENT",cx,125,900);
- x.fillStyle=T.mu;x.font=F(28)+'px '+sans;x.fillText('DAILY ENGAGEMENT REPORT',cx,178,900);
+ x.fillStyle=T.mu;x.font=F(28)+'px '+sans;x.fillText('TOTAL ENGAGEMENT REPORT',cx,178,900);
  x.lineWidth=30;x.lineCap='round';x.strokeStyle=T.tr;
  x.beginPath();x.arc(cx,cy,R,0,Math.PI*2);x.stroke();
  if(n>0&&tot){x.strokeStyle=T.fg;x.beginPath();x.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,n/tot)-(n>=tot?0.0001:0));x.stroke()}
