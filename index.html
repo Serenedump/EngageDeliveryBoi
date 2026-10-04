@@ -68,6 +68,7 @@ textarea:focus-visible{outline:3px solid var(--today)}
 .item a{color:inherit}
 .del{margin-left:auto;padding:2px 8px;font-size:.8rem}
 .empty{color:var(--mute);padding:14px 0}
+.note{margin:4px 0 0;font-size:.88rem;padding:6px 8px;border-left:3px solid var(--sel);background:var(--bg);border-radius:0 8px 8px 0;white-space:pre-wrap;overflow-wrap:anywhere}
 form{display:grid;gap:8px;margin-top:14px;padding-top:14px;border-top:2px solid var(--line)}
 form h3{margin:0;font-size:1rem}
 input,select{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;width:100%}
@@ -347,9 +348,12 @@ html[data-fnt] .hero h1,html[data-fnt] .hero h1 span,html[data-fnt] .head h2,htm
       <input id="q" type="search" placeholder="Search this day" aria-label="Search" style="margin-bottom:8px">
       <p class="sum" id="sum"></p>
       <div id="list"></div>
-      <form id="add"><h3>Add many to this date</h3>
-        <textarea id="t" rows="3" required placeholder="Paste links, one per line. Titles are filled in for you.&#10;Or: My title | https://site.com/post"></textarea>
-        <div class="row"><select id="ty"><option value="a">Article</option><option value="v">Video</option></select><input id="tm" type="time" aria-label="Time"></div>
+      <form id="add"><h3>Add to this date</h3>
+        <input id="ti" type="text" maxlength="120" autocomplete="off" aria-label="Title of the link" placeholder="Title of the link (optional, filled in for you if empty)">
+        <input id="lk" type="url" inputmode="url" autocomplete="off" aria-label="Link" placeholder="Link (https://...)">
+        <select id="ty" aria-label="Article or Video"><option value="a">Article</option><option value="v">Video</option></select>
+        <textarea id="nt" rows="2" maxlength="300" aria-label="Note for the team" placeholder="Note (optional), e.g. Please leave a comment"></textarea>
+        <details id="many"><summary>Paste many links at once</summary><textarea id="t" rows="3" placeholder="One per line. Titles are filled in for you.&#10;Or: My title | https://site.com/post"></textarea></details>
         <div id="adminAdd" hidden><details id="assign"><summary id="assignSum">Assign to: Everyone</summary><div id="assignList"></div></details>
           <select id="rep" aria-label="Repeat"><option value="">Does not repeat</option><option value="d">Every day for 2 weeks</option><option value="w">Weekdays for 4 weeks</option><option value="k">Every week for 8 weeks</option></select></div>
         <button class="go" type="submit">Add items</button></form>
@@ -567,7 +571,7 @@ function drawList(){
   const cb=document.createElement("input");cb.type="checkbox";cb.checked=mine().has(id);cb.setAttribute("aria-label","Mark as engaged");
   cb.onchange=()=>{if(cb.checked&&needOpen(x,id)){cb.checked=false;alert("Open the link first, then come back and tick the box.");return}cb.checked?mine().add(id):mine().delete(id);saveMine();render()};if(mineOnly(x,ME))r.appendChild(cb);else{cb.disabled=true;cb.checked=false;cb.setAttribute("aria-label","Not assigned to you");r.appendChild(cb);r.style.opacity=".65"}
   const su=safeUrl(x.u),title=su?'<a href="'+esc(su)+'" target="_blank" rel="noopener">'+esc(x.t)+"</a>":esc(x.t);
-  r.insertAdjacentHTML("beforeend",'<span class="tag '+x.ty+'">'+(x.ty==="a"?"Article":"Video")+"</span><div><b>"+title+"</b><small>"+fmt(x.tm)+(x.auto?" · Suggested":" · Added")+(x.to&&x.to.length?" · For "+esc(forLabel(x)):"")+(x.sr?" · ↻ repeats":"")+"</small></div>");
+  r.insertAdjacentHTML("beforeend",'<span class="tag '+x.ty+'">'+(x.ty==="a"?"Article":"Video")+"</span><div><b>"+title+"</b><small>"+(fmt(x.tm)?fmt(x.tm)+(x.auto?" · Suggested":" · Added"):(x.auto?"Suggested":"Added"))+(x.to&&x.to.length?" · For "+esc(forLabel(x)):"")+(x.sr?" · ↻ repeats":"")+"</small>"+(x.nt?'<p class="note">💬 '+esc(x.nt)+"</p>":"")+"</div>");
   {const la=r.querySelector("a");if(la){const mv=()=>{logOpen(id,x);if(!mine().has(id)){const c=r.querySelector("input[type=checkbox]");if(c&&!c.disabled)c.setAttribute("aria-label","Mark as engaged")}};la.addEventListener("click",mv);la.addEventListener("auxclick",mv)}}
   if(needOpen(x,id)&&!cb.disabled){const hn=document.createElement("small");hn.textContent="Open the link first";hn.style.color="var(--mute)";r.lastElementChild.appendChild(hn)}
   if(!x.auto&&(!online||x.by===uid||canEditAll)){const bt=document.createElement("button");const ac=document.createElement("span"),eb=document.createElement("button");ac.className="acts";
@@ -619,21 +623,22 @@ function editRow(x){
  ty.className="ni";ty.setAttribute("aria-label","Type");ty.innerHTML='<option value="a">Article</option><option value="v">Video</option>';ty.value=x.ty;
  let abox=null,sc=null;
  const sv=document.createElement("button"),cn=document.createElement("button");sv.type="button";cn.type="button";sv.textContent="Save";cn.textContent="Cancel";
- row.appendChild(ty);row.appendChild(tm);f.appendChild(t);f.appendChild(u);f.appendChild(row);
+ const nta=document.createElement("textarea");nta.className="ni";nta.rows=2;nta.maxLength=300;nta.value=x.nt||"";nta.placeholder="Note for the team (optional), e.g. Please leave a comment";nta.setAttribute("aria-label","Note");
+ row.appendChild(ty);row.appendChild(tm);f.appendChild(t);f.appendChild(u);f.appendChild(nta);f.appendChild(row);
  if(adm){const d=document.createElement("details"),sy=document.createElement("summary"),ch=document.createElement("div"),bx=document.createElement("div"),
    upd=()=>{const n=bx.querySelectorAll("input:checked").length;sy.textContent="Assign to: "+(n?n+" selected":"Everyone")};
   ch.className="chips";bx.className="alist";abox=bx;fillAssign(bx,ch,new Set(x.to||[]),upd,"ni");upd();d.appendChild(sy);d.appendChild(ch);d.appendChild(bx);f.appendChild(d)}
  if(x.sr){sc=document.createElement("select");sc.className="ni";sc.setAttribute("aria-label","Apply changes to");
   sc.innerHTML='<option value="one">Apply to: only this day</option><option value="all">Apply to: this and all later days</option>';f.appendChild(sc)}
  sv.onclick=()=>{const nt=t.value.trim(),l=S.items[k]||[],o=findIt(k,x);if(!nt||!o)return;const nu=u.value.trim(),
-   ch={t:nt,u:/^https?:\/\//.test(nu)?nu:"",tm:tm.value,ty:ty.value},to=abox?[...abox.querySelectorAll("input:checked")].map(i=>i.value):null,
-   apply=it=>{const n=Object.assign({},it,ch);if(!it.id)n.id=it.ty+"_"+hash(it.t);if(to){delete n.to;delete n.gn;delete n.gx;if(to.length)n.to=to}return n};
+   ch={t:nt,u:/^https?:\/\//.test(nu)?nu:"",tm:tm.value,ty:ty.value,nt:nta.value.trim().slice(0,300)},to=abox?[...abox.querySelectorAll("input:checked")].map(i=>i.value):null,
+   apply=it=>{const n=Object.assign({},it,ch);if(!n.nt)delete n.nt;if(!it.id)n.id=it.ty+"_"+hash(it.t);if(to){delete n.to;delete n.gn;delete n.gx;if(to.length)n.to=to}return n};
   if(o.sr&&sc&&sc.value==="all"){Object.keys(S.items).filter(z=>z>=k).forEach(z=>{if((S.items[z]||[]).some(y=>y.sr===o.sr))mutate(z,l=>l.map(y=>y.sr===o.sr?apply(y):y))})}
   else{mutate(k,l=>l.map(y=>sameItem(y,o)?apply(y):y))}
   editKey=null;render()};
  cn.onclick=()=>{editKey=null;drawList()};
- bar.appendChild(sv);bar.appendChild(cn);f.appendChild(bar);r.appendChild(f);setTimeout(()=>t.focus(),0);return r}
-let canEditAll=false,tok=0;
+ bar.appendChild(sv);bar.appendChild(cn);f.appendChild(bar);r.appendChild(f);setTimeout(()=>(noteFocus?nta:t).focus(),0);noteFocus=false;return r}
+let canEditAll=false,tok=0,noteFocus=false;
 async function drawTeam(){
  const T=document.getElementById("team"),my=++tok;
  document.getElementById("teamTitle").textContent="Who has engaged · "+sel.toLocaleDateString("en",{month:"short",day:"numeric"});
@@ -673,14 +678,15 @@ function autoItem(u){var x;try{x=new URL(u)}catch(e){return{t:u}}
  var tt=h+(p==="/"?"":p);return{t:tt.length>60?tt.slice(0,58)+"…":tt}}
 document.getElementById("add").addEventListener("submit",e=>{e.preventDefault();
  if(online&&!canW){alert("You have view-only access, so you can't add items.");return}
- const k=key(sel),ty=document.getElementById("ty").value,tm=document.getElementById("tm").value;
+ if(!(document.getElementById("ti").value+document.getElementById("lk").value+document.getElementById("t").value).trim()){alert("Add a link first.");return}
+ const k=key(sel),ty=document.getElementById("ty").value,tm="",nt=document.getElementById("nt").value.trim().slice(0,300);
  const to=[...document.querySelectorAll("#assignList input:checked")].map(i=>i.value),rp=document.getElementById("rep").value,sr0=Date.now().toString(36)+Math.random().toString(36).slice(2,6),dts=[sel];
  if(rp){const step=rp==="k"?7:1,cnt=rp==="d"?13:rp==="w"?27:7;for(let i=1;i<=cnt;i++){const dt=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()+i*step);if(rp==="w"&&(dt.getDay()===0||dt.getDay()===6))continue;dts.push(dt)}}
- const add={},seenU=new Set;let skipped=0;document.getElementById("t").value.split("\n").map(l=>l.trim()).filter(Boolean).forEach((l,li)=>{let t,u,lty=ty;const raw=l.split("|").map(z=>z.trim());
-  if(raw.length===1&&/^https?:\/\/\S+$/.test(raw[0])){u=raw[0];const g=autoItem(u);t=g.t;if(g.ty)lty=g.ty}else{t=raw[0];u=raw[1]}
+ const add={},seenU=new Set;let skipped=0;((()=>{const a=document.getElementById("ti").value.replace(/\|/g,"/").trim(),b=document.getElementById("lk").value.trim();return b?(a?a+" | "+b:b):a})()+"\n"+document.getElementById("t").value).split("\n").map(l=>l.trim()).filter(Boolean).forEach((l,li)=>{let t,u,lty=ty,ln=nt;const raw=l.split("|").map(z=>z.trim());
+  if(raw.length===1&&/^https?:\/\/\S+$/.test(raw[0])){u=raw[0];const g=autoItem(u);t=g.t;if(g.ty)lty=g.ty}else{t=raw[0];u=raw[1];if(raw[2])ln=raw.slice(2).join(" | ").slice(0,300)}
   if(u&&seenU.has(u)){skipped++;return}if(u)seenU.add(u);
-  dts.forEach((dt,di)=>{const kk=key(dt);if(u&&(S.items[kk]||[]).some(z=>z.u===u)){if(!di)skipped++;return}const it={t,ty:lty,tm,u:/^https?:\/\//.test(u||"")?u:"",by:uid||"local"};if(!di)it.at=Date.now();if(to.length)it.to=to;if(rp)it.sr=sr0+"-"+li;it.id=newId();(add[kk]=add[kk]||[]).push(it)})});
- Object.keys(add).forEach(kk=>mutate(kk,l=>l.concat(add[kk])));e.target.reset();render();if(skipped)alert("Skipped "+skipped+" link"+(skipped>1?"s":"")+" already added.")});
+  dts.forEach((dt,di)=>{const kk=key(dt);if(u&&(S.items[kk]||[]).some(z=>z.u===u)){if(!di)skipped++;return}const it={t,ty:lty,tm,u:/^https?:\/\//.test(u||"")?u:"",by:uid||"local"};if(!di)it.at=Date.now();if(ln)it.nt=ln;if(to.length)it.to=to;if(rp)it.sr=sr0+"-"+li;it.id=newId();(add[kk]=add[kk]||[]).push(it)})});
+ Object.keys(add).forEach(kk=>mutate(kk,l=>l.concat(add[kk])));e.target.reset();{const one=(add[k]||[]);if(one.length===1&&Object.keys(add).length&&!one[0].nt){editKey=k+"#"+one[0].id;noteFocus=true}}render();if(skipped)alert("Skipped "+skipped+" link"+(skipped>1?"s":"")+" already added.")});
 render();
 (async()=>{
  try{user=await claude.use("user");db=await claude.use("db")}catch(e){}
