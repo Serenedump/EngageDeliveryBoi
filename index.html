@@ -541,9 +541,9 @@ body.on-pet #epet,body.on-pet #epet-show{display:none!important}
       <div class="pbox"><p id="pet-bub" class="pbub" role="status" hidden></p><button type="button" id="pet-big" aria-label="Pet Boi"></button></div>
       <div class="pname"><label for="pname">Dog tag</label><input id="pname" type="text" maxlength="12" placeholder="Boi" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false"></div>
       <div class="ppick" id="ppick" role="group" aria-label="Choose a pet"></div><div class="ppick" id="pgender" role="group" aria-label="Boy or girl"><button type="button" data-g="boy" aria-pressed="true">👦 Boy</button><button type="button" data-g="girl" aria-pressed="false">👧 Girl</button></div>
-      <div class="pctl"><button type="button" data-a="fit">👕 Outfit</button><button type="button" data-a="acc">🎩 Accessory</button><button type="button" data-m="1" aria-pressed="false">🏍️ Motor</button><button type="button" data-k="1" aria-pressed="false" hidden>💄 Makeup</button><button type="button" data-w="1" aria-pressed="false" hidden>💇 Wig</button></div>
+      <div class="pctl"><button type="button" data-a="fit">👕 Outfit</button><button type="button" data-a="acc">🎩 Accessory</button><button type="button" data-m="1" aria-pressed="false">🏍️ Motor</button><button type="button" data-k="1" aria-pressed="false" hidden>💄 Makeup</button><button type="button" data-w="1" aria-pressed="false" hidden>💇 Wig</button><button type="button" id="psave" class="go">💾 Save</button></div>
       <div class="ppicker" id="ppicker" hidden></div><div class="ppicker" id="pmotor" hidden></div><div class="ppicker" id="pmakeup" hidden></div><div class="ppicker" id="pwig" hidden></div>
-      <p class="phint">Tap Boi to pet him. Finish your list to earn ⭐ and unlock outfits.</p>
+      <p class="phint">Tap Boi to pet him. Finish your list to earn ⭐ and unlock outfits. Tap Save to back up to the cloud ☁️ (sign in first).</p>
     </section>
     <section class="card proom" id="proom" aria-label="Boi's Room"></section>
     <section id="petHost" aria-label="Boi's deliveries"></section>
@@ -1950,6 +1950,7 @@ var _pgMission=goMission;goMission=function(){if(pgIn){var t=document.querySelec
    g.appendChild(b)});
   pkb.appendChild(g)}
  document.querySelectorAll("#pgPet [data-a]").forEach(function(b){b.setAttribute("aria-pressed","false");b.onclick=function(){if(b.dataset.a==="fit")PVO=null;else PVA=null;var t=$("epet-"+b.dataset.a);if(t)t.click();PK=b.dataset.a;drawPicker()}});
+ var svb=$("psave");if(svb)svb.onclick=function(){save();var C=window.CloudSave;if(!C){react("excited","Saved! ✅",2400);return}react("excited","Saving… ☁️",1500);C.push().then(function(){react("excited","Saved to the cloud ☁️✅",3000)}).catch(function(e){react("excited",e&&e.message==="signin"?"Saved on this device. Sign in to save to the cloud ☁️":"Saved on this device. Cloud save failed, try again.",3800)})};
 })();
 /* ===== Pet page: Boi's Room (decorate) ===== */
 var proom=$("proom"),pedit=false;
@@ -3140,6 +3141,34 @@ var cs=document.createElement("style");cs.textContent=".rsroom{position:relative
 document.addEventListener("eco",function(){if(started&&!root.hidden&&!busy)renderCol()});
 window.Residence={show:start,hide:stop};
 if(!root.hidden)start();
+})();
+</script>
+<script>
+/* ===== Cloud save (Supabase edge function, verified by Firebase login) ===== */
+(function(){
+var URL="https://ntcdqdfhblmcgbypnkwk.supabase.co/functions/v1/pet-save";
+var KEYS=["engage-boi:v1","engage-eco-v1","engage-house-v1","boi-room-v1","boi-extra-rooms-v1","boi-music-room-v1","boi-gender-v1","boi-makeup-v1","boi-motor-v1","boi-wig-v1","boi-store-v1","boi-lane-v1"];
+var TS="boi-cloud-ts",HK="boi-cloud-h",busy=false;
+function snap(){var o={};KEYS.forEach(function(k){try{var v=localStorage.getItem(k);if(v!=null)o[k]=v}catch(e){}});return o}
+function hash(o){var s=JSON.stringify(o),h=0,i;for(i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return String(h)}
+function user(){try{var u=window.firebase&&firebase.auth&&firebase.auth().currentUser;return u&&!u.isAnonymous?u:null}catch(e){return null}}
+function call(method,body){var u=user();if(!u)return Promise.reject(new Error("signin"));
+ return u.getIdToken().then(function(t){return fetch(URL,{method:method,headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||"fail");return j})})})}
+function push(){if(busy)return Promise.reject(new Error("busy"));var s=snap(),h=hash(s);busy=true;
+ return call("POST",{data:s}).then(function(j){try{localStorage.setItem(TS,String(j.updated_at));localStorage.setItem(HK,h)}catch(e){}busy=false;return true}).catch(function(e){busy=false;throw e})}
+function pull(){return call("GET").then(function(j){
+ var local=snap(),has=Object.keys(local).length>0,last=+localStorage.getItem(TS)||0,dirty=hash(local)!==localStorage.getItem(HK);
+ if(!j.exists){if(has)return push().catch(function(){});return}
+ if(j.updated_at>last&&(!last||!dirty)){
+  if(sessionStorage.getItem("boi-cloud-applied"))return;
+  Object.keys(j.data||{}).forEach(function(k){if(KEYS.indexOf(k)>=0&&typeof j.data[k]==="string")try{localStorage.setItem(k,j.data[k])}catch(e){}});
+  try{localStorage.setItem(TS,String(j.updated_at));localStorage.setItem(HK,hash(snap()));sessionStorage.setItem("boi-cloud-applied","1")}catch(e){}
+  location.reload();
+ }else if(dirty){push().catch(function(){})}
+})}
+window.CloudSave={push:push,pull:pull};
+var tries=0,iv=setInterval(function(){tries++;if(user()){clearInterval(iv);pull().catch(function(){})}else if(tries>40)clearInterval(iv)},1500);
+document.addEventListener("visibilitychange",function(){if(document.hidden&&user()&&hash(snap())!==localStorage.getItem(HK))push().catch(function(){})});
 })();
 </script>
 </body>
