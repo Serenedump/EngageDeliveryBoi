@@ -348,7 +348,7 @@ html[data-fnt] .hero h1,html[data-fnt] .hero h1 span,html[data-fnt] .head h2,htm
 .act .ac{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .act .ac a,.act .ac button{font-size:.82rem;padding:5px 13px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:inherit;font-weight:600}
 .act .ac a.open{background:var(--blue);border-color:var(--blue);color:#fff}
-.t-ls{background:#d9232a}.t-sh{background:#7a3fd1}.t-rl{background:#1f4fd8}.t-pr{background:#e07b00}
+.t-ls{background:#d9232a}.t-sh{background:#7a3fd1}.t-rl{background:#1f4fd8}.t-pr{background:#e07b00}.t-pj{background:#0f8a6a}
 #mhForm{position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow:auto}
 #mhForm form{margin:0;max-width:460px;width:100%;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:22px;display:grid;gap:8px}
 #mhForm label{font-size:.85rem;color:var(--mute);display:grid;gap:4px}
@@ -2281,7 +2281,7 @@ window.BoiPage={
 <script>
 (function(){
  var $=function(i){return document.getElementById(i)};
- var TYPES={ls:["Listening party","t-ls","🎧"],sh:["Stationhead","t-sh","📻"],rl:["Release","t-rl","💿"],pr:["Promotion","t-pr","📣"]};
+ var TYPES={ls:["Listening party","t-ls","🎧"],sh:["Stationhead","t-sh","📻"],rl:["Release","t-rl","💿"],pr:["Promotion","t-pr","📣"],pj:["Project","t-pj","🎯"]};
  var esc=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
  var safe=function(u){return /^https?:\/\//i.test(u||"")?u:""};
  var pad=function(n){return String(n).padStart(2,"0")};
@@ -2428,7 +2428,7 @@ var RS=[{"freq": "92.3", "name": "FMR Manila", "note": "Banana Krew (#9)", "link
    $("mfSave").disabled=true;
    try{
     await rpc("musichub_save",d);delete PH[editId];close();load();
-   }catch(er){console.error(er);$("mfMsg").textContent="Could not save. Check your connection and passcode.";$("mfSave").disabled=false}};
+   }catch(er){console.error(er);$("mfMsg").textContent=(d.p_ty==="pj"&&/check|constraint|type|ty\b/i.test(String(er&&er.message)))?"Project type isn't enabled in Supabase yet. See the SQL note.":"Could not save. Check your connection and passcode.";$("mfSave").disabled=false}};
   $("mfTi").focus();
  }
  $("mhAdd").onclick=function(){openForm(null)};
@@ -3257,6 +3257,8 @@ var db=null,uid=null,isAdmin=false,myName="Admin",rows=[],seenAt=0,lastLoad=0,fo
 function user(){try{var u=window.firebase&&firebase.auth&&firebase.auth().currentUser;return u&&!u.isAnonymous?u:null}catch(e){return null}}
 function h(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function fmt(ts){try{return new Date(ts).toLocaleDateString(undefined,{month:"short",day:"numeric"})}catch(e){return""}}
+(function(){var st=document.createElement("style");st.textContent="#anBoard .animg{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin:8px 0}#anBoard .anlink{display:inline-block;margin:4px 0;padding:7px 14px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;text-decoration:none}#anBoard .anlink:focus-visible{outline:3px solid var(--today);outline-offset:2px}#anBoard .anpic{margin-top:6px;display:grid;gap:6px;justify-items:start}#anBoard .anpic img{max-width:100%;max-height:220px;border-radius:10px}";document.head.appendChild(st)})();
+function shrink(file){return new Promise(function(res,rej){if(!/^image\//.test(file.type))return rej();var u=URL.createObjectURL(file),im=new Image();im.onload=function(){URL.revokeObjectURL(u);var m=900,k=Math.min(1,m/Math.max(im.width,im.height)),w=Math.max(1,Math.round(im.width*k)),hh=Math.max(1,Math.round(im.height*k)),c=document.createElement("canvas");c.width=w;c.height=hh;var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,hh);x.drawImage(im,0,0,w,hh);var q=.8,d=c.toDataURL("image/jpeg",q);while(d.length>330000&&q>.4){q-=.1;d=c.toDataURL("image/jpeg",q)}if(d.length>330000)return rej();res(d)};im.onerror=function(){URL.revokeObjectURL(u);rej()};im.src=u})}
 function draw(){
  box.textContent="";
  box.hidden=false;
@@ -3268,13 +3270,22 @@ function draw(){
  else if(!rows.length)box.appendChild(h("p","meta","No announcements yet."));
  if(isAdmin&&formOpen){
   var f=h("div","frm"),ta=h("textarea");ta.maxLength=500;ta.placeholder="Write an announcement (max 500 characters)";
-  var row=h("div","row"),lb=h("label",null),cb=h("input");cb.type="checkbox";lb.appendChild(cb);lb.appendChild(document.createTextNode(" 📌 Pin on top"));
+  var li=h("input");li.type="url";li.placeholder="Link (optional), e.g. https://...";li.maxLength=500;li.setAttribute("aria-label","Link");li.style.cssText="width:100%;margin-top:6px";
+  var pic=h("div","anpic"),fi=h("input"),imgData="",pv=h("img"),rm=h("button",null,"Remove picture");fi.type="file";fi.accept="image/*";fi.setAttribute("aria-label","Add picture");pv.alt="Picture preview";pv.hidden=true;rm.type="button";rm.hidden=true;
+  fi.onchange=function(){var fl=fi.files&&fi.files[0];if(!fl)return;shrink(fl).then(function(d){imgData=d;pv.src=d;pv.hidden=false;rm.hidden=false}).catch(function(){alert("Couldn't use that picture. Try a different one.");fi.value=""})};
+  rm.onclick=function(){imgData="";pv.hidden=true;rm.hidden=true;pv.removeAttribute("src");fi.value=""};
+  pic.appendChild(fi);pic.appendChild(pv);pic.appendChild(rm);
+  var row=h("div","row"),lb=h("label",null),cb=h("input");cb.type="checkbox";lb.appendChild(cb);lb.appendChild(document.createTextNode(" \ud83d\udccc Pin on top"));
   var go=h("button","go","Post");go.type="button";
-  go.onclick=function(){var t=ta.value.trim();if(!t){ta.focus();return}go.disabled=true;
-   db.collection(COL).add({t:t.slice(0,500),by:uid,n:myName,at:Date.now(),pin:cb.checked}).then(function(){formOpen=false;return load(true)}).catch(function(e){console.error(e);go.disabled=false;alert("Could not post. Check that the announcements rule is published in Firestore.")})};
-  row.appendChild(lb);row.appendChild(go);f.appendChild(ta);f.appendChild(row);box.appendChild(f)}
+  go.onclick=function(){var t=ta.value.trim(),lk=li.value.trim();if(!t&&!imgData){ta.focus();return}
+   if(lk&&!/^https?:\/\//i.test(lk)){if(/^[\w-]+(\.[\w-]+)+(\/|$)/.test(lk))lk="https://"+lk;else{li.focus();alert("Enter a valid link that starts with https://");return}}
+   go.disabled=true;var o={t:t.slice(0,500),by:uid,n:myName,at:Date.now(),pin:cb.checked};if(imgData)o.img=imgData;if(lk)o.link=lk.slice(0,500);
+   db.collection(COL).add(o).then(function(){formOpen=false;return load(true)}).catch(function(e){console.error(e);go.disabled=false;alert("Could not post. Check that the announcements rule is published in Firestore.")})};
+  row.appendChild(lb);row.appendChild(go);f.appendChild(ta);f.appendChild(li);f.appendChild(pic);f.appendChild(row);box.appendChild(f)}
  rows.forEach(function(r){
-  var it=h("div","it");it.appendChild(h("div",null,(r.pin?"📌 ":"")+r.t));
+  var it=h("div","it");if(r.t||r.pin)it.appendChild(h("div",null,(r.pin?"📌 ":"")+r.t));
+  if(r.img){var im=h("img","animg");im.src=r.img;im.alt="Announcement picture";im.loading="lazy";it.appendChild(im)}
+  if(r.link){var al=h("a","anlink","🔗 Open link");al.href=r.link;al.target="_blank";al.rel="noopener noreferrer";it.appendChild(al)}
   var m=h("div","meta");m.appendChild(h("span",null,(r.n||"Admin")+" · "+fmt(r.at)));
   if(r.at>seenAt)m.appendChild(h("span","new","NEW"));
   if(isAdmin){var d=h("button",null,"Delete");d.type="button";d.onclick=function(){if(!confirm("Delete this announcement?"))return;db.collection(COL).doc(r.id).delete().then(function(){return load(true)}).catch(function(e){console.error(e);alert("Could not delete.")})};m.appendChild(d)}
@@ -3286,7 +3297,7 @@ function load(force){
  if(!force&&Date.now()-lastLoad<300000)return Promise.resolve();
  lastLoad=Date.now();uid=u.uid;db=firebase.firestore();
  var adm=db.doc("members/"+uid).get().then(function(m){if(m&&m.exists){var d=m.data()||{};isAdmin=d.admin===true;if(d.name)myName=String(d.name).slice(0,40)}}).catch(function(){});
- var lst=db.collection(COL).orderBy("at","desc").limit(8).get().then(function(q){err=false;errCode="";ready=true;var list=[];q.forEach(function(x){var v=x.data();if(v&&typeof v.t==="string")list.push({id:x.id,t:v.t.slice(0,500),n:v.n,at:+v.at||0,pin:!!v.pin})});list.sort(function(p,q2){return (q2.pin-p.pin)||(q2.at-p.at)});rows=list}).catch(function(e){console.error("announcements",e);err=true;errCode=(e&&e.code)||"";ready=true;rows=[]});
+ var lst=db.collection(COL).orderBy("at","desc").limit(8).get().then(function(q){err=false;errCode="";ready=true;var list=[];q.forEach(function(x){var v=x.data();if(v&&typeof v.t==="string")list.push({id:x.id,t:v.t.slice(0,500),n:v.n,at:+v.at||0,pin:!!v.pin,img:(typeof v.img==="string"&&v.img.length<450000&&/^data:image\/(jpeg|png|webp);base64,/.test(v.img.slice(0,40)))?v.img:"",link:(typeof v.link==="string"&&/^https?:\/\//i.test(v.link))?v.link.slice(0,500):""})});list.sort(function(p,q2){return (q2.pin-p.pin)||(q2.at-p.at)});rows=list}).catch(function(e){console.error("announcements",e);err=true;errCode=(e&&e.code)||"";ready=true;rows=[]});
  return Promise.all([adm,lst]).then(draw)
 }
 try{seenAt=+localStorage.getItem(SEEN)||0}catch(e){}
