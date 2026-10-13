@@ -2525,7 +2525,7 @@ function houseSVG(){var s='<svg viewBox="0 0 300 262" class="rsc" xmlns="http://
  for(var k=0;k<6;k++)s+='<ellipse cx="'+(120+(k%2?7:-7))+'" cy="'+(152+k*9)+'" rx="8" ry="2.6" fill="#e9b27a" stroke="#c9873f" stroke-width=".8"/>';
  s+='<g pointer-events="none" text-anchor="middle" font-size="14" font-family="system-ui,sans-serif">';
  YS.forEach(function(p){s+='<text x="'+p[1]+'" y="'+p[2]+'" dy=".35em">'+p[0]+'</text>'});
- s+='</g>';if(YEDIT)s+='<rect width="300" height="262" fill="transparent" style="cursor:copy" data-yard="1"/>';
+ s+='</g>';if(YEDIT)s+='<rect width="300" height="262" fill="transparent" style="cursor:copy" pointer-events="all" data-yard="1"/>';
  var b=bx[SLP?"bed":LASTRV]||bx.sala;s+='</g><text x="'+b[0]+'" y="'+b[1]+'" font-size="15" text-anchor="middle" pointer-events="none">'+(SLP?"\ud83d\ude34":"\ud83d\udc36")+'</text></svg>';
  return s}
 function drawHouse(){proom.textContent="";proom.classList.remove("edit");pedit=false;
@@ -3484,7 +3484,7 @@ function mine(){if(live){for(var k in houses)if(houses[k].uid===uid)return house
 function houseAt(n){if(live)return houses["h"+n]||null;var m=mine();return m&&m.n===n?m:null}
 function isMine(H){return !!H&&(live?H.uid===uid:true)}
 function hname(n){var H=houseAt(n);return H?(H.hn||H.owner)+" · "+H.owner:"Unit "+(n+1)+" · "+Economy.npcName(n)}
-function perm(e){var p=e&&(e.code==="permission-denied"||/permission/i.test(e.message||""));live=false;var b=$("rsBanner");if(b){b.textContent="";b.hidden=false;b.appendChild(h("p",{text:p?"Houses are saved on this device only: Firestore doesn't allow the houses collection yet, so others can't see them.":"Can't reach the town right now, so houses are saved on this device only."}));if(p){var pre=h("pre");pre.textContent=RULES;b.appendChild(h("details",{},[h("summary",{text:"Show the Firestore rules to add"}),h("p",{text:"In Firebase console → Firestore → Rules, add this inside the documents match block, then Publish."}),pre]))}}render()}
+function perm(e){var p=e&&(e.code==="permission-denied"||/permission/i.test(e.message||""));live=false;var b=$("rsBanner");if(b){b.textContent="";b.hidden=false;b.appendChild(h("p",{text:p?"Houses are saved on this device only: Firestore doesn't allow the houses collection yet, so others can't see them.":"Can't reach the town right now, so houses are saved on this device only."}));if(p){var pre=h("pre");pre.textContent=RULES;b.appendChild(h("details",{},[h("summary",{text:"Show the Firestore rules to add"}),h("p",{text:"In Firebase console → Firestore → Rules, add this inside the documents match block, then Publish."}),pre]))}}render();if(!p&&started&&db)setTimeout(function(){if(started&&db&&!live)loadHouses()},8000)}
 /* ---------- scene ---------- */
 function extSrc(H){if(!H)return"";try{var v=isMine(H)&&window.BoiPage?BoiPage.ext():H.ext;return typeof v==="string"&&v.length>20&&v.length<40000?v:""}catch(e){return""}}
 function houseSVG(n){var c=n%4,r=Math.floor(n/4),x=8+c*72,y=10+r*106,H=houseAt(n),m=isMine(H),col=H?H.color:"#e8e6df",pi=PAL.indexOf(col),roof=H?ROOFS[pi<0?0:pi]:"#a9a9a0",nm=H?(H.hn||H.owner):"For claim",lab=H?hname(n):"Unit "+(n+1)+", for claim";
@@ -3647,13 +3647,25 @@ function renderCol(){var c=$("rsCol");if(!c)return;c.textContent="";var C=Econom
  var g=h("div",{class:"rscol"});C.forEach(function(x){g.appendChild(h("div",{},[h("b",{text:x.e}),h("span",{text:x.n+(x.c>1?" ×"+x.c:"")})]))});c.appendChild(g)}
 function render(){renderScene();renderPanel();renderBoard();renderCol();Economy.fire()}
 /* ---------- live ---------- */
-var loadHouses=function(){},hsSig=null;
-function start(){if(started){loadStores(renderBoard);render();loadHouses();return}started=true;hsSig=null;
- try{var cu=window.firebase&&firebase.auth&&firebase.auth().currentUser;if(cu&&!cu.isAnonymous&&firebase.firestore){uid=cu.uid;db=firebase.firestore()}}catch(e){}
- if(db){var hsCb=function(s){houses={};s.forEach(function(d){var v=d.data();if(v&&Number.isInteger(v.n)&&v.n>=0&&v.n<NH&&typeof v.uid==="string")houses["h"+v.n]={n:v.n,uid:v.uid,owner:cl(v.owner,12)||"Pet",hn:cl(v.hn,14),color:PAL.indexOf(v.color)>=0?v.color:PAL[0],room:typeof v.room==="string"&&v.room.length<40000?v.room:"",foot:typeof v.foot==="string"&&v.foot.length<40000?v.foot:"",ext:typeof v.ext==="string"&&v.ext.length<40000?v.ext:""}});live=true;var b=$("rsBanner");if(b)b.hidden=true;var sg=JSON.stringify(houses);if(sg===hsSig)return;hsSig=sg;render();shareRoom()};
-  loadHouses=function(){if(document.hidden&&hsSig!=null)return;db.collection("park_houses").get().then(hsCb).catch(perm)};loadHouses();var hIv=setInterval(loadHouses,60000);unsub=function(){clearInterval(hIv)}}
- loadStores(renderBoard);render();tk=setInterval(function(){if(!busy&&!document.hidden){loadStores(renderBoard);renderBoard()}},60000)}
-function stop(){clearTrip();started=false;if(unsub){try{unsub()}catch(e){}unsub=null}clearInterval(tk);live=false;houses={}}
+var loadHouses=function(){},hsSig=null,attached=false,authWait=0,houseUnsub=null;
+function setBan(m){var b=$("rsBanner");if(!b)return;b.textContent="";b.hidden=false;b.appendChild(h("p",{text:m}))}
+function getUser(){try{var cu=window.firebase&&firebase.auth&&firebase.auth().currentUser;return cu&&!cu.isAnonymous&&firebase.firestore?cu:null}catch(e){return null}}
+function attach(){
+ var hsCb=function(s){if(!started)return;if(s.metadata&&s.metadata.fromCache&&s.size===0)return;houses={};s.forEach(function(d){var v=d.data();if(v&&Number.isInteger(v.n)&&v.n>=0&&v.n<NH&&typeof v.uid==="string")houses["h"+v.n]={n:v.n,uid:v.uid,owner:cl(v.owner,12)||"Pet",hn:cl(v.hn,14),color:PAL.indexOf(v.color)>=0?v.color:PAL[0],room:typeof v.room==="string"&&v.room.length<40000?v.room:"",foot:typeof v.foot==="string"&&v.foot.length<40000?v.foot:"",ext:typeof v.ext==="string"&&v.ext.length<40000?v.ext:""}});live=true;var b=$("rsBanner");if(b)b.hidden=true;var sg=JSON.stringify(houses);if(sg===hsSig)return;hsSig=sg;render();shareRoom()};
+ loadHouses=function(){if(!db)return;db.collection("park_houses").get().then(hsCb).catch(perm)};
+ try{houseUnsub=db.collection("park_houses").onSnapshot(hsCb,perm)}catch(e){loadHouses()}
+ var hIv=setInterval(function(){if(!document.hidden)loadHouses()},30000);
+ unsub=function(){clearInterval(hIv);if(houseUnsub){try{houseUnsub()}catch(e){}houseUnsub=null}};
+ stores.t=0;loadStores(renderBoard);render()}
+function tryAttach(){var cu=getUser();if(!cu)return false;if(attached)return true;uid=cu.uid;db=firebase.firestore();attached=true;if(authWait){clearInterval(authWait);authWait=0}attach();return true}
+function connect(){if(tryAttach())return;
+ setBan("Connecting to the town… Sign in to see everyone's houses.");
+ try{if(window.firebase&&firebase.apps&&firebase.apps.length)firebase.auth().onAuthStateChanged(function(){if(started)tryAttach()})}catch(e){}
+ var n=0;authWait=setInterval(function(){n++;if(!started||tryAttach()||n>240){clearInterval(authWait);authWait=0}},500)}
+function start(){if(started){loadStores(renderBoard);render();loadHouses();return}started=true;hsSig=null;attached=false;
+ loadStores(renderBoard);render();tk=setInterval(function(){if(!busy&&!document.hidden){loadStores(renderBoard);renderBoard()}},60000);connect()}
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&started&&!root.hidden){if(attached)loadHouses();else tryAttach()}});
+function stop(){clearTrip();started=false;if(unsub){try{unsub()}catch(e){}unsub=null}if(authWait){clearInterval(authWait);authWait=0}attached=false;db=null;uid=null;clearInterval(tk);live=false;houses={}}
 root.innerHTML='<section class="card cm"><div class="head"><h2>Willievers Residence 🏡</h2><span class="cmchip ecoChip"></span></div><div id="rsBanner" class="cmban" hidden></div><div class="cmwrap rsw"><svg id="rsBg" viewBox="0 0 300 330" role="group" aria-label="Willievers Residence"></svg><div class="rspet" id="rsPet" hidden></div></div><div id="rsPanel" class="cminw"></div><p class="cmtoast" id="rsToast" role="status" aria-live="polite"></p></section>'
 +'<section class="card cm"><div class="head"><h2>🛵 Delivery Board</h2></div><div id="rsBoard"></div></section>'
 +'<section class="card cm"><div class="head"><h2>🎁 My Collection</h2></div><div id="rsCol"></div></section>';
