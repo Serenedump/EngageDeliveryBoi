@@ -2631,11 +2631,13 @@ window.BoiPage={
    var fl=Array.prototype.slice.call($("mdPh").files,0,12),m=$("mfMsg");
    if(!fl.length){m.textContent="Choose at least one photo.";return}
    var cap=$("mdCa").value.trim();$("mfSave").disabled=true;var done=0;
-   try{
-    for(var i=0;i<fl.length;i++){m.style.color="var(--mute)";m.textContent="Uploading "+(i+1)+" of "+fl.length+"…";
-     var data=await shrink(fl[i]);await rpc("musichub_doc_save",{p_pass:pass,p_caption:cap,p_photo:data});done++}
-    close();loadDocs();
-   }catch(er){console.error(er);m.style.color="#c0392b";m.textContent=(done?done+" uploaded. ":"")+"Could not upload. Check your connection and passcode (and that the Documentation SQL was run).";$("mfSave").disabled=false;if(done)loadDocs()}};
+   var fails=[];
+   for(var i=0;i<fl.length;i++){m.style.color="var(--mute)";m.textContent="Uploading "+(i+1)+" of "+fl.length+"\u2026";
+    try{var data=await shrink(fl[i]);await rpc("musichub_doc_save",{p_pass:pass,p_caption:cap,p_photo:data});done++}
+    catch(er){console.error(er);fails.push("#"+(i+1)+": "+((er&&er.message)||"failed"))}}
+   if(!fails.length){close();loadDocs();return}
+   m.style.color="#c0392b";m.textContent=(done?done+" uploaded. ":"")+"Could not upload "+fails.length+" photo"+(fails.length>1?"s":"")+" ("+fails[0]+(fails.length>1?", \u2026":"")+"). Check your connection and try again.";
+   $("mfSave").disabled=false;if(done)loadDocs()};
  }
  function chips(){
   var h='<button type="button" data-f="all" aria-pressed="'+(flt==="all")+'">All</button>';
@@ -2696,9 +2698,16 @@ var RS=[{"freq": "92.3", "name": "FMR Manila", "note": "Banana Krew (#9)", "link
    if(x&&confirm('Delete "'+x.title+'"?'))rpc("musichub_delete",{p_pass:pass,p_id:x.id}).then(load).catch(function(e){console.error(e);alert("Could not delete. Check your connection.")})}});
  }
  function shrink(file){return new Promise(function(res,rej){
-  var r=new FileReader();r.onerror=rej;r.onload=function(){var im=new Image();im.onerror=rej;im.onload=function(){
-   var m=720,s=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
-   c.getContext("2d").drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.72))};im.src=r.result};r.readAsDataURL(file)})}
+  var u=URL.createObjectURL(file),im=new Image();
+  im.onerror=function(){URL.revokeObjectURL(u);rej(new Error("Could not read that photo (format not supported?)"))};
+  im.onload=function(){URL.revokeObjectURL(u);try{
+   var m=720,s=Math.min(1,m/Math.max(im.naturalWidth||im.width,im.naturalHeight||im.height)),c=document.createElement("canvas");
+   c.width=Math.max(1,Math.round((im.naturalWidth||im.width)*s));c.height=Math.max(1,Math.round((im.naturalHeight||im.height)*s));
+   var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+   var q=.72,d=c.toDataURL("image/jpeg",q);while(d.length>550000&&q>.3){q-=.1;d=c.toDataURL("image/jpeg",q)}
+   if(d.length>550000)return rej(new Error("Photo is too big even after shrinking"));
+   res(d)}catch(e){rej(e)}};
+  im.src=u})}
  function openForm(id){
   var x=id?rows.find(function(r){return r.id===id}):null;editId=x?x.id:null;photo=x?(x.photo||null):null;
   var o=document.createElement("div");o.id="mhForm";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label","Activity");
