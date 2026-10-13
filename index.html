@@ -360,6 +360,7 @@ html[data-fnt] .hero h1,html[data-fnt] .hero h1 span,html[data-fnt] .head h2,htm
 .dc .dcb img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
 .dc figcaption{padding:7px 10px;font-size:.82rem;overflow-wrap:anywhere}
 .dc .dcd{margin:0 8px 8px;font-size:.78rem;padding:4px 10px;border-radius:999px}
+.dc .dcb{position:relative}.dmos{display:grid;gap:2px;width:100%;aspect-ratio:1/1;background:var(--line)}.dmos.m2,.dmos.m3,.dmos.m4{grid-template-columns:1fr 1fr}.dmos.m3,.dmos.m4{grid-template-rows:1fr 1fr}.dmos.m3 img:first-child{grid-row:span 2}.dc .dmos img{aspect-ratio:auto;height:100%;min-height:0}.dn{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.72);color:#fff;font:700 .74rem/1 system-ui,sans-serif;padding:5px 9px;border-radius:999px}
 #mhThumbs{display:flex;gap:6px;flex-wrap:wrap}#mhThumbs img{width:56px;height:56px;border-radius:10px;object-fit:cover}
 #mhZoom{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px}
 #mhZoom img{max-width:100%;max-height:78vh;max-height:78dvh;border-radius:12px;object-fit:contain}
@@ -415,7 +416,7 @@ html[data-fnt] .hero h1,html[data-fnt] .hero h1 span,html[data-fnt] .head h2,htm
 .pbub{position:absolute;top:0;left:50%;transform:translateX(-50%);width:max-content;max-width:min(290px,92%);margin:0;background:#fffdf8;color:#4a3326;border:2px solid #4a3326;border-radius:16px;padding:8px 14px;font:700 19px/1.15 Caveat,'Segoe Print','Comic Sans MS',cursive;box-shadow:0 6px 14px -6px #0007;pointer-events:none}
 .pbub[hidden]{display:none}
 .pbub::after{content:"";position:absolute;bottom:-9px;left:50%;margin-left:-7px;width:12px;height:12px;background:#fffdf8;border-right:2px solid #4a3326;border-bottom:2px solid #4a3326;transform:rotate(45deg)}
-.mht{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.mht .tl{flex:1 1 140px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--panel)}.mht .tl b{display:block;font-size:.8rem}.mht .tl .n{font-size:1.15rem;font-weight:800}.mht .tl small{display:block;opacity:.75}.mht .tm{letter-spacing:1px;font-weight:700;word-break:break-all}.mht .tg{text-decoration:line-through;margin-right:6px}
+.mht{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.mht .tl{flex:1 1 140px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--panel)}.mht .tl b{display:block;font-size:.8rem}.mht .tl .n{font-size:1.15rem;font-weight:800}.mht .tl small{display:block;opacity:.75}.mht .un{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.mht .un i{font-style:normal;font-size:.78rem;padding:2px 8px;border:1px solid var(--line);border-radius:999px}.mht .un em{font-size:.78rem;opacity:.7}.mht .tm{letter-spacing:1px;font-weight:700;word-break:break-all}.mht .tg{text-decoration:line-through;margin-right:6px}
 #anBoard{margin:0 0 14px}.an .it{border-top:1px solid var(--line);padding:8px 0;white-space:pre-wrap;word-break:break-word}.an .meta{font-size:.75rem;opacity:.75;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px}.an .new{background:var(--red);color:#fff;border-radius:8px;padding:1px 6px;font-size:.7rem;font-weight:700}.an .pin{font-size:.8rem}.an textarea{width:100%;min-height:76px;box-sizing:border-box;margin:6px 0}.an .frm{border:1px solid var(--line);border-radius:12px;padding:8px;margin:8px 0}.an .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .pctl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
 .pctl button{background:var(--panel);font-weight:700;padding:9px 16px;min-height:42px}
@@ -581,7 +582,7 @@ body.on-pet #epet,body.on-pet #epet-show{display:none!important}
     <section class="card" aria-label="WadLounge Music Hub">
       <div class="head"><h2>WadLounge Music Hub</h2><span style="display:flex;gap:6px"><button type="button" class="go" id="mhAdd" hidden>+ Add activity</button><button type="button" id="mhLock" hidden>Admin</button></span></div>
       <p class="sum">Listening parties, Stationhead sessions, releases and promotions.</p>
-      <div id="mhTally" class="mht" aria-label="Visitor tally"></div>
+      <div id="mhTally" class="mht" aria-label="Who joined today"></div>
       <div class="chips" id="mhChips"></div>
       <div id="mhList"></div>
     </section>
@@ -2527,7 +2528,7 @@ window.BoiPage={
  var canEdit=false,pass="",started=false,rows=[],flt="all",editId=null,photo=null,state="idle",timer=null;
  try{pass=sessionStorage.getItem("mh-pass")||""}catch(e){}
  function api(path,opt){opt=opt||{};opt.headers=Object.assign({apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"},opt.headers||{});return fetch(SB+"/rest/v1/"+path,opt)}
- function rpc(fn,body){return api("rpc/"+fn,{method:"POST",body:JSON.stringify(body)}).then(function(r){if(!r.ok)return r.json().catch(function(){return{}}).then(function(j){var e=new Error(j.message||("HTTP "+r.status));e.code=j.code;throw e});return r.json()})}
+ function rpc(fn,body){return api("rpc/"+fn,{method:"POST",body:JSON.stringify(body)}).then(function(r){if(!r.ok)return r.json().catch(function(){return{}}).then(function(j){var e=new Error(j.message||("HTTP "+r.status));e.code=j.code;throw e});return r.text().then(function(t){if(!t)return null;try{return JSON.parse(t)}catch(x){return null}})})}
  function setPage(p,push){
   if(p!=="music"&&p!=="pet"&&p!=="community"&&p!=="lane"&&p!=="residence")p="engage";
   $("pgEngage").hidden=p!=="engage";$("pgMusic").hidden=p!=="music";$("pgPet").hidden=p!=="pet";var pcm=$("pgCommunity");if(pcm)pcm.hidden=p!=="community";var pln=$("pgLane");if(pln)pln.hidden=p!=="lane";var prs=$("pgResidence");if(prs)prs.hidden=p!=="residence";
@@ -2544,12 +2545,30 @@ window.BoiPage={
  var PH={},TL={hub:[0,0],stationhead:[0,0]},tlWired=false;
  function dayStr(){try{return new Date().toLocaleDateString("en-CA")}catch(e){return new Date().toISOString().slice(0,10)}}
  function marks(n){n=Math.min(n,25);var o="",g=Math.floor(n/5),r=n%5,i;for(i=0;i<g;i++)o+='<span class="tg">||||</span>';if(r)o+="|".repeat(r);return o}
+ var VN={hub:[],stationhead:[]},namesOk=false;
  function drawTally(){var b=$("mhTally");if(!b)return;
-  var item=function(k,label){var v=TL[k]||[0,0];return '<div class="tl"><b>'+label+'</b><span class="n">'+v[0]+'</span> <small>today · '+v[1]+' total</small><span class="tm">'+marks(v[0])+'</span></div>'};
-  b.innerHTML=item("hub","👥 Pumasok sa Music Hub")+item("stationhead","📻 Pumasok sa Stationhead")}
- function loadTally(){return api("rpc/mh_counts",{method:"POST",body:"{}"}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){j.forEach(function(x){if(TL[x.k])TL[x.k]=[+x.today||0,+x.total||0]});drawTally()}).catch(function(){drawTally()})}
- function hit(k){var sk="mh-hit-"+k,d=dayStr();try{if(localStorage.getItem(sk)===d)return Promise.resolve()}catch(e){}
-  return api("rpc/mh_hit",{method:"POST",body:JSON.stringify({p_k:k})}).then(function(r){if(r.ok){try{localStorage.setItem(sk,d)}catch(e){}return loadTally()}}).catch(function(){})}
+  var item=function(k,label){var v=TL[k]||[0,0],nm=VN[k]||[],h='<div class="tl"><b>'+label+'</b>';
+   if(namesOk){h+='<span class="n">'+nm.length+'</span> <small>joined today</small>';
+    if(nm.length){h+='<span class="un">';nm.slice(0,12).forEach(function(n){h+='<i>'+esc(n)+'</i>'});if(nm.length>12)h+='<i>+'+(nm.length-12)+' more</i>';h+='</span>'}
+    else h+='<span class="un"><em>No one yet today</em></span>'}
+   else h+='<span class="n">'+v[0]+'</span> <small>today \u00b7 '+v[1]+' total</small>';
+   return h+'</div>'};
+  b.innerHTML=item("hub","\ud83d\udc65 Joined Music Hub")+item("stationhead","\ud83d\udcfb Joined Stationhead")}
+ function loadTally(){
+  var c=api("rpc/mh_counts",{method:"POST",body:"{}"}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){j.forEach(function(x){if(TL[x.k])TL[x.k]=[+x.today||0,+x.total||0]})}).catch(function(){});
+  var n=api("rpc/mh_visitors",{method:"POST",body:"{}"}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){var o={hub:[],stationhead:[]};j.forEach(function(x){if(o[x.k]&&o[x.k].indexOf(x.name)<0)o[x.k].push(x.name)});VN=o;namesOk=true}).catch(function(){});
+  return Promise.all([c,n]).then(drawTally)}
+ function myUser(){return new Promise(function(res){
+  var id="",nm="";try{id=localStorage.getItem("mh-guest-id")||"";if(!id){id="g"+Math.random().toString(36).slice(2,12);localStorage.setItem("mh-guest-id",id)}nm=localStorage.getItem("engage-name")||""}catch(e){}
+  try{var u=window.firebase&&firebase.auth&&firebase.auth().currentUser;
+   if(u&&!u.isAnonymous){id=u.uid;firebase.firestore().doc("members/"+u.uid).get().then(function(d){var n=d&&d.exists&&d.data().name;res({id:id,name:String(n||u.displayName||nm||"Guest").slice(0,40)})}).catch(function(){res({id:id,name:nm||"Guest"})});return}}catch(e){}
+  res({id:id,name:nm||"Guest"})})}
+ function hit(k){var sk="mh-hit-"+k,d=dayStr(),old=Promise.resolve();
+  var seen=false;try{seen=localStorage.getItem(sk)===d}catch(e){}
+  if(!seen)old=api("rpc/mh_hit",{method:"POST",body:JSON.stringify({p_k:k})}).then(function(r){if(r.ok){try{localStorage.setItem(sk,d)}catch(e){}}}).catch(function(){});
+  return old.then(function(){return myUser()}).then(function(u){var nk="mh-nhit-"+k,tag=d+"|"+u.name,done=false;try{done=localStorage.getItem(nk)===tag}catch(e){}
+   if(done)return;
+   return api("rpc/mh_hit_named",{method:"POST",body:JSON.stringify({p_k:k,p_uid:u.id,p_name:u.name})}).then(function(r){if(r.ok){try{localStorage.setItem(nk,tag)}catch(e){}}}).catch(function(){})}).then(loadTally).catch(function(){})}
  function load(){
   return api("musichub_activities?select=id,ty,title,date,time,link,details&order=date.asc").then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
    .then(function(j){
@@ -2578,65 +2597,84 @@ window.BoiPage={
  };
  /* ===== Documentation: photos of collab partners / people who joined ===== */
  var DOCS=[],dState="idle";
+ var GROUPS=[],hasBatch=true,hasBatchRpc=true;
+ function groupDocs(rows){
+  var ok=rows.filter(function(x){return /^data:image\//.test(x.photo||"")}),seen={},out=[];
+  ok.forEach(function(x){
+   var k=x.batch?"b:"+x.batch:"i:"+x.id,g=seen[k];
+   if(!g){g=seen[k]={ids:[],photos:[],caption:x.caption||"",t:x.created_at};out.push(g)}
+   g.ids.push(x.id);g.photos.push(x.photo);if(!g.caption&&x.caption)g.caption=x.caption});
+  out.forEach(function(g){ // rows arrive newest-first; show each post's photos in upload order
+   g.ids.reverse();g.photos.reverse()});
+  return out}
  function loadDocs(){if(dState==="idle")dState="loading";
-  return api("musichub_docs?select=id,caption,photo,created_at&order=created_at.desc&limit=200").then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
-   .then(function(j){DOCS=j.filter(function(x){return /^data:image\//.test(x.photo||"")});dState="ok";if(flt==="docs")draw()})
+  var q=function(cols){return api("musichub_docs?select="+cols+"&order=created_at.desc&limit=200").then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})};
+  return q("id,caption,photo,batch,created_at").catch(function(){hasBatch=false;return q("id,caption,photo,created_at")})
+   .then(function(j){GROUPS=groupDocs(j);dState="ok";if(flt==="docs")draw()})
    .catch(function(e){console.error(e);if(dState!=="ok"){dState="err";if(flt==="docs")draw()}})}
- function zoom(i){
+ function zoom(g,i){
   var old=$("mhZoom");if(old)old.remove();
-  var x=DOCS[i];if(!x)return;
+  var G=GROUPS[g],src=G&&G.photos[i];if(!src)return;var n=G.photos.length;
   var o=document.createElement("div");o.id="mhZoom";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label","Photo");
-  o.innerHTML='<img alt="'+esc(x.caption||"Photo")+'" src="'+x.photo+'">'+(x.caption?'<p>'+esc(x.caption)+'</p>':"")
+  o.innerHTML='<img alt="'+esc(G.caption||"Photo")+'" src="'+src+'">'+(G.caption||n>1?'<p>'+esc(G.caption||"")+(n>1?'<br><small>'+(i+1)+' / '+n+'</small>':"")+'</p>':"")
    +'<div class="zb"><button type="button" id="zPrev" aria-label="Previous photo">\u2039</button><button type="button" id="zClose">Close</button><button type="button" id="zNext" aria-label="Next photo">\u203a</button></div>';
   document.body.appendChild(o);
   var close=function(){o.remove();document.removeEventListener("keydown",key)};
-  var go=function(d){close();zoom((i+d+DOCS.length)%DOCS.length)};
+  var go=function(d){close();zoom(g,(i+d+n)%n)};
   var key=function(e){if(e.key==="Escape")close();else if(e.key==="ArrowLeft")go(-1);else if(e.key==="ArrowRight")go(1)};
   document.addEventListener("keydown",key);
   o.onclick=function(e){if(e.target===o)close()};
   $("zClose").onclick=close;$("zPrev").onclick=function(){go(-1)};$("zNext").onclick=function(){go(1)};
-  if(DOCS.length<2){$("zPrev").hidden=true;$("zNext").hidden=true}
+  if(n<2){$("zPrev").hidden=true;$("zNext").hidden=true}
   $("zClose").focus();
  }
  function docs(L){
   if(dState==="idle"){loadDocs();L.innerHTML='<p class="empty">Loading…</p>';return}
   if(dState==="loading"){L.innerHTML='<p class="empty">Loading…</p>';return}
   if(dState==="err"){L.innerHTML='<p class="empty">Could not load the photos. Check your connection, then reopen this tab. (Admin: make sure the Documentation SQL was run in Supabase.)</p>';return}
-  var h='<p class="sum">Photo documentation of our collabs and everyone who joined.'+(DOCS.length?" · "+DOCS.length+" photo"+(DOCS.length===1?"":"s"):"")+'</p>';
-  if(!DOCS.length)h+='<p class="empty">'+(canEdit?"No photos yet. Tap “+ Add photos”.":"No photos yet. Check back soon.")+'</p>';
+  var h='<p class="sum">Photo documentation of our collabs and everyone who joined.'+(GROUPS.length?" · "+GROUPS.reduce(function(a,g){return a+g.photos.length},0)+" photos":"")+'</p>';
+  if(!GROUPS.length)h+='<p class="empty">'+(canEdit?"No photos yet. Tap “+ Add photos”.":"No photos yet. Check back soon.")+'</p>';
   else{h+='<div class="dgrid">';
-   DOCS.forEach(function(x,i){h+='<figure class="dc"><button type="button" class="dcb" data-z="'+i+'" aria-label="View photo'+(x.caption?": "+esc(x.caption):"")+'"><img loading="lazy" alt="'+esc(x.caption||"Photo")+'" src="'+x.photo+'"></button>'
-    +(x.caption?'<figcaption>'+esc(x.caption)+'</figcaption>':"")
-    +(canEdit?'<button type="button" class="dcd" data-x="'+esc(x.id)+'">Delete</button>':"")+'</figure>'});
+   GROUPS.forEach(function(G,i){var n=G.photos.length,m=Math.min(n,4);
+    var im=G.photos.slice(0,m).map(function(u){return '<img loading="lazy" alt="" src="'+u+'">'}).join("");
+    h+='<figure class="dc"><button type="button" class="dcb" data-z="'+i+'" aria-label="View photo'+(n>1?"s":"")+(G.caption?": "+esc(G.caption):"")+'">'
+    +(n>1?'<div class="dmos m'+m+'">'+im+'</div><span class="dn">'+n+' photos</span>':im)+'</button>'
+    +(G.caption?'<figcaption>'+esc(G.caption)+'</figcaption>':"")
+    +(canEdit?'<button type="button" class="dcd" data-x="'+i+'">Delete'+(n>1?" all "+n:"")+'</button>':"")+'</figure>'});
    h+='</div>'}
   L.innerHTML=h;
-  L.querySelectorAll("[data-z]").forEach(function(b){b.onclick=function(){zoom(+b.dataset.z)}});
+  L.querySelectorAll("[data-z]").forEach(function(b){b.onclick=function(){zoom(+b.dataset.z,0)}});
   L.querySelectorAll("[data-x]").forEach(function(b){b.onclick=function(){
-   if(!confirm("Delete this photo?"))return;
-   rpc("musichub_doc_delete",{p_pass:pass,p_id:b.dataset.x}).then(loadDocs).catch(function(e){console.error(e);alert("Could not delete. Check your connection and passcode.")})}});
+   var G=GROUPS[+b.dataset.x];if(!G||!confirm(G.ids.length>1?"Delete this post and all "+G.ids.length+" photos?":"Delete this photo?"))return;
+   G.ids.reduce(function(p,id){return p.then(function(){return rpc("musichub_doc_delete",{p_pass:pass,p_id:id})})},Promise.resolve()).then(loadDocs).catch(function(e){console.error(e);alert("Could not delete. Check your connection and passcode.")})}});
  }
  function openDocForm(){
   var o=document.createElement("div");o.id="mhForm";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label","Add photos");
   o.innerHTML='<form><h2 style="margin:0">Add photos</h2>'
-   +'<label>Photos (you can pick many)<input id="mdPh" type="file" accept="image/*" multiple></label>'
+   +'<label>Photos (pick many, they post together as one)<input id="mdPh" type="file" accept="image/*" multiple></label>'
    +'<div id="mhThumbs"></div>'
    +'<label>Caption (optional, e.g. names of who joined)<input id="mdCa" maxlength="120"></label>'
    +'<p id="mfMsg" role="alert" style="margin:0;min-height:1.2em;color:#c0392b;font-size:.88rem"></p>'
    +'<div class="btns"><button class="go" type="submit" id="mfSave">Upload</button><button type="button" id="mfCancel">Cancel</button></div></form>';
   document.body.appendChild(o);
-  var close=function(){o.remove()};
+  var close=function(){o.remove()};var queue=null,batchId=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
   $("mfCancel").onclick=close;
-  $("mdPh").onchange=function(){var t=$("mhThumbs");t.innerHTML="";Array.prototype.slice.call(this.files,0,12).forEach(function(f){var im=document.createElement("img");im.alt="";im.src=URL.createObjectURL(f);t.appendChild(im)})};
+  $("mdPh").onchange=function(){queue=null;var t=$("mhThumbs");t.innerHTML="";Array.prototype.slice.call(this.files,0,12).forEach(function(f){var im=document.createElement("img");im.alt="";im.src=URL.createObjectURL(f);t.appendChild(im)})};
   o.querySelector("form").onsubmit=async function(e){e.preventDefault();
    var fl=Array.prototype.slice.call($("mdPh").files,0,12),m=$("mfMsg");
    if(!fl.length){m.textContent="Choose at least one photo.";return}
    var cap=$("mdCa").value.trim();$("mfSave").disabled=true;var done=0;
-   var fails=[];
-   for(var i=0;i<fl.length;i++){m.style.color="var(--mute)";m.textContent="Uploading "+(i+1)+" of "+fl.length+"\u2026";
-    try{var data=await shrink(fl[i]);await rpc("musichub_doc_save",{p_pass:pass,p_caption:cap,p_photo:data});done++}
+   if(!queue){queue=fl.slice()}
+   var fails=[],todo=queue.slice(),total=todo.length,useOld=!hasBatchRpc;
+   for(var i=0;i<todo.length;i++){m.style.color="var(--mute)";m.textContent="Uploading "+(i+1)+" of "+total+"\u2026";
+    try{var data=await shrink(todo[i]);
+     if(!useOld){try{await rpc("musichub_doc_save_b",{p_pass:pass,p_caption:cap,p_photo:data,p_batch:batchId})}
+      catch(e2){if(e2&&(e2.code==="PGRST202"||/could not find the function/i.test(e2.message||""))){hasBatchRpc=false;useOld=true;await rpc("musichub_doc_save",{p_pass:pass,p_caption:cap,p_photo:data})}else throw e2}}
+     else await rpc("musichub_doc_save",{p_pass:pass,p_caption:cap,p_photo:data});
+     done++;queue.splice(queue.indexOf(todo[i]),1)}
     catch(er){console.error(er);fails.push("#"+(i+1)+": "+((er&&er.message)||"failed"))}}
    if(!fails.length){close();loadDocs();return}
-   m.style.color="#c0392b";m.textContent=(done?done+" uploaded. ":"")+"Could not upload "+fails.length+" photo"+(fails.length>1?"s":"")+" ("+fails[0]+(fails.length>1?", \u2026":"")+"). Check your connection and try again.";
+   m.style.color="#c0392b";m.textContent=(done?done+" uploaded. ":"")+"Could not upload "+fails.length+" photo"+(fails.length>1?"s":"")+" ("+fails[0]+(fails.length>1?", \u2026":"")+"). Check your connection and tap Upload to retry only the failed ones.";
    $("mfSave").disabled=false;if(done)loadDocs()};
  }
  function chips(){
