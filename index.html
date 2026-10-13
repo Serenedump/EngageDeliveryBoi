@@ -1544,13 +1544,13 @@ OUT=OUT.concat([
  {id:'berry',n:'Berry Hoodie',k:'hood',a:'#c2185b',b:'#8e1146',e:'heart',ec:'#ffffff',r:'',u:22}
 ]);
 ACC=ACC.concat([{id:'halo',n:'Golden Halo',u:16},{id:'bunny',n:'Bunny Ears',u:18},{id:'beret',n:'Berry Beret',u:20},{id:'flowers',n:'Flower Crown',u:22},{id:'catears',n:'Cat Ears',u:24}]);
-var _acc1=accessory;accessory=function(id){switch(id){
+var _acc1b=accessory;accessory=function(id){switch(id){
  case 'halo':return '<ellipse cx="102" cy="30" rx="27" ry="7.5" fill="none" stroke="#ffd24d" stroke-width="5.5"/><ellipse cx="102" cy="29" rx="27" ry="7.5" fill="none" stroke="#fff6c4" stroke-width="1.6" opacity=".8"/>';
  case 'bunny':return '<path d="M78 56 Q66 6 84 8 Q98 12 94 56Z" fill="#fff" '+sk()+'/><path d="M82 48 Q76 16 85 15 Q91 18 90 48Z" fill="#ffb3c7"/><path d="M110 56 Q106 12 120 8 Q138 6 126 56Z" fill="#fff" '+sk()+'/><path d="M114 48 Q113 18 120 15 Q128 16 123 48Z" fill="#ffb3c7"/>';
  case 'beret':return '<path d="M58 64 Q54 36 100 33 Q148 34 148 60 Q104 52 58 64Z" fill="#c2185b" '+sk()+'/><circle cx="102" cy="31" r="3.4" fill="#8e1146" '+sk(1.6)+'/>';
  case 'flowers':return [[64,60,'#ff8fb4'],[78,46,'#ffd24d'],[102,40,'#fff6e6'],[126,46,'#ff8fb4'],[140,60,'#ffd24d']].map(function(f){return '<circle cx="'+f[0]+'" cy="'+f[1]+'" r="8" fill="'+f[2]+'" '+sk(1.6)+'/><circle cx="'+f[0]+'" cy="'+f[1]+'" r="2.6" fill="#ff6f9f"/>'}).join('');
  case 'catears':return '<path d="M62 62 L66 26 L92 48Z" fill="#4a3326" '+sk()+'/><path d="M69 54 L71 36 L84 48Z" fill="#ffb3c7"/><path d="M142 62 L138 26 L112 48Z" fill="#4a3326" '+sk()+'/><path d="M135 54 L133 36 L120 48Z" fill="#ffb3c7"/>';
- default:return _acc1(id)}};
+ default:return _acc1b(id)}};
 var _ff=faceFor;faceFor=function(m){return _ff(m==="dance"?"excited":m)};
 function wheel(cx){return '<circle cx="'+cx+'" cy="176" r="15" fill="#3a2f2a" '+sk(2.4)+'/><g class="bw"><circle cx="'+cx+'" cy="176" r="7.5" fill="#ffd9b0" '+sk(1.6)+'/><path d="M'+cx+' 169 V183 M'+(cx-7)+' 176 H'+(cx+7)+'" stroke="'+C.ink+'" stroke-width="1.6"/></g>'}
 function scooter(){var K=C.ink;return wheel(40)+wheel(162)
