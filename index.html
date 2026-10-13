@@ -515,7 +515,7 @@ body.on-pet #epet,body.on-pet #epet-show{display:none!important}
 #anBoard .it.latest .antx{font-size:1.1rem;font-weight:600}
 #anBoard .it{transition:box-shadow .2s}#anBoard .it:hover{box-shadow:0 6px 16px rgba(0,0,0,.14)}
 .day.full:not(.sel){background-image:none;background-color:#ffe3b0;color:#1d1a14}
-.day.full::before{display:none}
+.day.full::before{display:block!important;top:6px;right:14px;width:15px;height:15px;line-height:15px;font-size:.7rem;font-weight:900;background:#3f8f2a;color:#fff;box-shadow:0 0 0 2px #fff;z-index:4}
 .day span:first-child{position:relative;z-index:3;font-weight:700}
 #days{position:relative}
 .day.today::after{display:none!important}
@@ -524,6 +524,8 @@ body.on-pet #epet,body.on-pet #epet-show{display:none!important}
 .day.sel .cnt{display:none}
 @media(prefers-reduced-motion:reduce){#calRider{transition:none!important}}
 </style>
+<style>#pgPet .pall{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:12px}#pgPet .pall[hidden]{display:none}#pgPet .pall button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 10px;border-radius:16px;border:2px solid var(--line);background:var(--panel);color:var(--ink);font:800 .8rem system-ui,sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent}#pgPet .pall button svg{width:76px;height:76px;display:block}#pgPet .pall button[aria-pressed="true"]{border-color:var(--red);box-shadow:0 3px 0 var(--redd)}#pgPet #pallbtn[aria-pressed="true"]{background:var(--red);color:#fff;border-color:var(--red)}</style>
+<style>.cmros{margin:8px 0;padding:10px;border:2px solid var(--line);border-radius:16px;background:var(--panel);display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}.cmros[hidden]{display:none}.cmros .rp{display:flex;flex-direction:column;align-items:center;gap:2px;font:800 .75rem system-ui,sans-serif;color:var(--ink);text-align:center;min-width:0}.cmros .rp .ra{width:56px;height:56px}.cmros .rp .ra svg{width:100%;height:100%;display:block}.cmros .rp span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cmros .rp.me span{color:#d9232a}.cmros .re{grid-column:1/-1;text-align:center;font:600 .8rem system-ui,sans-serif;opacity:.7}button.cmchip{border:0;font:inherit}.cmros .rp.off .ra{opacity:.55;filter:grayscale(.5)}</style>
 </head>
 <body>
 <!-- Object color filters. Safari/WebKit ignores CSS filter on SVG children, so colors use SVG filters. Hues must match HUR/HU. -->
@@ -575,7 +577,7 @@ body.on-pet #epet,body.on-pet #epet-show{display:none!important}
     <section class="card pstage" aria-label="Pet Boi">
       <div class="pbox"><p id="pet-bub" class="pbub" role="status" hidden></p><button type="button" id="pet-big" aria-label="Pet Boi"></button></div>
       <div class="pname"><label for="pname">Dog tag</label><input id="pname" type="text" maxlength="12" placeholder="Boi" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false"></div>
-      <div class="ppick" id="ppick" role="group" aria-label="Choose a pet"></div><div class="ppick" id="pgender" role="group" aria-label="Boy or girl"><button type="button" data-g="boy" aria-pressed="true">👦 Boy</button><button type="button" data-g="girl" aria-pressed="false">👧 Girl</button></div>
+      <div class="ppick" id="ppick" role="group" aria-label="Choose a pet"></div><div class="ppick"><button type="button" id="pallbtn" aria-pressed="false" aria-controls="pall">👀 All pets</button></div><div class="pall" id="pall" hidden></div><div class="ppick" id="pgender" role="group" aria-label="Boy or girl"><button type="button" data-g="boy" aria-pressed="true">👦 Boy</button><button type="button" data-g="girl" aria-pressed="false">👧 Girl</button></div>
       <div class="pctl"><button type="button" data-a="fit">👕 Outfit</button><button type="button" data-a="acc">🎩 Accessory</button><button type="button" data-m="1" aria-pressed="false">🏍️ Motor</button><button type="button" data-k="1" aria-pressed="false" hidden>💄 Makeup</button><button type="button" data-w="1" aria-pressed="false" hidden>💇 Wig</button><button type="button" id="psave" class="go">💾 Save</button></div>
       <div class="ppicker" id="ppicker" hidden></div><div class="ppicker" id="pmotor" hidden></div><div class="ppicker" id="pmakeup" hidden></div><div class="ppicker" id="pwig" hidden></div>
       <p class="phint">Tap Boi to pet him. Finish your list to earn ⭐ and unlock outfits. Tap Save to back up to the cloud ☁️ (sign in first).</p>
@@ -2019,6 +2021,15 @@ var _pgMission=goMission;goMission=function(){if(pgIn){var t=document.querySelec
  document.querySelectorAll("#pgPet [data-a]").forEach(function(b){b.setAttribute("aria-pressed","false");b.onclick=function(){if(b.dataset.a==="fit")PVO=null;else PVA=null;var t=$("epet-"+b.dataset.a);if(t)t.click();PK=b.dataset.a;drawPicker()}});
  var svb=$("psave");if(svb)svb.onclick=function(){save();var C=window.CloudSave;if(!C){react("excited","Saved! ✅",2400);return}react("excited","Saving… ☁️",1500);C.push().then(function(){react("excited","Saved to the cloud ☁️✅",3000)}).catch(function(e){react("excited",e&&e.message==="signin"?"Saved on this device. Sign in to save to the cloud ☁️":"Saved on this device. Cloud save failed, try again.",3800)})};
 })();
+/* ===== All pets gallery ===== */
+(function(){
+ var btn=$("pallbtn"),box=$("pall");if(!btn||!box)return;
+ var EMJ=["\ud83d\udc36","\ud83d\udc31","\ud83d\udc30","\ud83d\udc3b","\ud83e\udd8a"];
+ function thumb(i){var keep=S.sp;S.sp=i;var h;try{h=pupSVG({mood:"happy",wave:false,o:OUT[S.oi],a:ACC[S.ai].id},"",SP[i].n)}finally{S.sp=keep}return h}
+ function draw2(){box.textContent="";SP.forEach(function(k,i){var b=el("button",null);b.type="button";b.innerHTML=thumb(i);b.appendChild(document.createTextNode((EMJ[i]||"\ud83d\udc3e")+" "+(i?k.n:"Dog")));b.setAttribute("aria-pressed",String(i===(S.sp|0)));b.onclick=function(){S.sp=i;save();react("excited",SP[i].say,3000);spSync();draw2()};box.appendChild(b)})}
+ btn.onclick=function(){var open=box.hidden;box.hidden=!open;btn.setAttribute("aria-pressed",String(open));if(open)draw2()};
+ var _d=draw;draw=function(){_d();if(!box.hidden)try{draw2()}catch(e){}};
+})();
 /* ===== Pet page: Boi's Room (decorate) ===== */
 var proom=$("proom"),pedit=false;
 function roomBoi(){var b=proom&&proom.querySelector(".rboi2");if(b)b.innerHTML=pupSVG(st(),"","")}
@@ -2957,7 +2968,7 @@ function start(){if(started)return;started=true;errShown=false;restored=false;pr
  try{var cu=window.firebase&&firebase.auth&&firebase.auth().currentUser;if(cu&&!cu.isAnonymous&&firebase.firestore){uid=cu.uid;db=firebase.firestore()}}catch(e){}
  if(!db){uid=null;live=false;setBanner("You're not signed in, so you're alone in Ashleyville for now.",false);renderAll();tk=setInterval(renderPets,6000);return}
  var first=true;
- unsubs.push(db.collection("park_presence").where("t",">",Date.now()-FRESH*2).orderBy("t","desc").limit(25).onSnapshot(function(s){pres={};s.forEach(function(d){var v=normP(d.data());if(v)pres[d.id]=v});
+ unsubs.push(db.collection("park_presence").where("t",">",Date.now()-FRESH*2).orderBy("t","desc").limit(60).onSnapshot(function(s){pres={};s.forEach(function(d){var v=normP(d.data());if(v)pres[d.id]=v});
    if(first){first=false;live=true;setBanner("",false)}
    if(!restored&&pres[uid]){restored=true;var m=pres[uid];if(parkedOk(m)){my.pk=m.pk;my.pt=m.pt}else if(my.pk>=0&&!parkedOk(m)){my.pk=-1}}
    renderPets();renderBar();if(mode==="visit"&&!decoEdit)renderPanel()},onErr));
@@ -2971,7 +2982,26 @@ function start(){if(started)return;started=true;errShown=false;restored=false;pr
 function stop(){if(!started)return;started=false;unsubs.forEach(function(u){try{u()}catch(e){}});unsubs=[];clearInterval(hb);clearInterval(tk);if(db&&uid){try{db.doc("park_presence/"+uid).set({t:0},{merge:true}).catch(function(){})}catch(e){}}pres={};stores={};pq=[];pqInit=false;live=false;Object.keys(petEls).forEach(function(k){petEls[k].remove();delete petEls[k]})}
 function renderAll(){renderScene();renderPets();renderBar();renderPanel()}
 /* ---------- init ---------- */
-root.innerHTML='<section class="card cm"><div class="head"><h2>Ashleyville 🏘️</h2><span class="cmchip" id="cmChip"></span><span class="cmchip ecoChip" aria-label="Your stars"></span></div><div id="cmBanner" class="cmban" hidden></div><div class="cmwrap" id="cmWrap"><svg class="cmbg" id="cmBg" viewBox="0 0 300 520" role="group" aria-label="Ashleyville"></svg><div class="cmmot" id="cmMot"></div><div class="cmpets" id="cmPets"></div><div class="cmroad" id="cmRoad"><svg viewBox="0 0 300 64" role="img" aria-label="Willievers Way"><rect width="300" height="64" fill="#3b3e4a"/><rect width="300" height="14" fill="#d9d3c4"/><rect y="14" width="300" height="2" fill="#bdb6a4"/><path d="M0 40H300" stroke="#ffd24d" stroke-width="2" stroke-dasharray="14 10"/><path d="M0 62H300" stroke="#fff" stroke-width="1.5" opacity=".5"/><rect x="82" y="1" width="136" height="12" rx="3" fill="#1f7a45" stroke="#fff" stroke-width="1"/><text x="150" y="10" font-size="7.4" font-weight="800" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" letter-spacing=".6">WILLIEVERS WAY</text><text class="cv" y="35">🚗</text><text class="cv cv2" y="58">🛵</text><text class="cv cv3" y="35">🚌</text></svg></div></div><p class="cmsub">🅿️ Park your motor, then drag your pet or tap to walk around. Tap a store to walk inside, tap a bench (or your pet) to sit. Tap an empty lot to build yours. Tap Willievers Way to head out of town.</p><div class="cmem" id="cmEm" role="group" aria-label="Emotes"></div><div class="cmbar" id="cmBar"></div><p class="cmtoast" id="cmToast" role="status"></p></section><section class="card cm" id="cmPanel" hidden></section>';
+root.innerHTML='<section class="card cm"><div class="head"><h2>Ashleyville 🏘️</h2><button type="button" class="cmchip" id="cmChip" aria-expanded="false" aria-controls="cmRoster" style="cursor:pointer"></button><span class="cmchip ecoChip" aria-label="Your stars"></span></div><div id="cmBanner" class="cmban" hidden></div><div id="cmRoster" class="cmros" hidden></div><div class="cmwrap" id="cmWrap"><svg class="cmbg" id="cmBg" viewBox="0 0 300 520" role="group" aria-label="Ashleyville"></svg><div class="cmmot" id="cmMot"></div><div class="cmpets" id="cmPets"></div><div class="cmroad" id="cmRoad"><svg viewBox="0 0 300 64" role="img" aria-label="Willievers Way"><rect width="300" height="64" fill="#3b3e4a"/><rect width="300" height="14" fill="#d9d3c4"/><rect y="14" width="300" height="2" fill="#bdb6a4"/><path d="M0 40H300" stroke="#ffd24d" stroke-width="2" stroke-dasharray="14 10"/><path d="M0 62H300" stroke="#fff" stroke-width="1.5" opacity=".5"/><rect x="82" y="1" width="136" height="12" rx="3" fill="#1f7a45" stroke="#fff" stroke-width="1"/><text x="150" y="10" font-size="7.4" font-weight="800" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" letter-spacing=".6">WILLIEVERS WAY</text><text class="cv" y="35">🚗</text><text class="cv cv2" y="58">🛵</text><text class="cv cv3" y="35">🚌</text></svg></div></div><p class="cmsub">🅿️ Park your motor, then drag your pet or tap to walk around. Tap a store to walk inside, tap a bench (or your pet) to sit. Tap an empty lot to build yours. Tap Willievers Way to head out of town.</p><div class="cmem" id="cmEm" role="group" aria-label="Emotes"></div><div class="cmbar" id="cmBar"></div><p class="cmtoast" id="cmToast" role="status"></p></section><section class="card cm" id="cmPanel" hidden></section>';
+/* ===== Ashleyville roster: everyone with a pet (online + offline) ===== */
+(function(){
+ var chip=$("cmChip"),ros=$("cmRoster");if(!chip||!ros)return;
+ var ALL={},loaded=false,loading=false;
+ function load(){if(!db||loading)return;loading=true;
+  var a=db.collection("park_presence").limit(300).get().then(function(q){q.forEach(function(d){var v=normP(d.data());if(v)ALL[d.id]={n:v.n,foot:v.foot,ride:v.ride}})}).catch(function(){});
+  var b=db.collection("park_houses").get().then(function(q){q.forEach(function(d){var v=d.data();if(v&&typeof v.uid==="string"&&!ALL[v.uid])ALL[v.uid]={n:cl(v.owner,12)||"Pet",foot:typeof v.foot==="string"&&v.foot.length<40000?v.foot:"",ride:""}})}).catch(function(){});
+  Promise.all([a,b]).then(function(){loaded=true;loading=false;if(!ros.hidden)fill()})}
+ function fill(){ros.textContent="";var on={},L=[];
+  entries().forEach(function(d){if(d.me||fresh(d)){on[d.id]=1;L.push({id:d.id,n:d.n,me:!!d.me,on:1,src:((d.me?(my.pk>=0):parkedOk(d))?d.foot:d.ride)||d.foot||d.ride||""})}});
+  Object.keys(ALL).forEach(function(k){if(on[k]||k===uid)return;var v=ALL[k];L.push({id:k,n:v.n,me:0,on:0,src:v.foot||v.ride||""})});
+  L.sort(function(a,b){return (b.me?1:0)-(a.me?1:0)||b.on-a.on||String(a.n).localeCompare(String(b.n))});
+  L.forEach(function(d){var w=h("div",{class:"rp"+(d.me?" me":"")+(d.on?"":" off")}),av=h("div",{class:"ra"}),sv=clean(d.src);
+   if(sv)av.appendChild(sv);else av.textContent="\ud83d\udc36";w.appendChild(av);w.appendChild(h("span",{text:(d.on?"\ud83d\udfe2 ":"\u26aa ")+d.n+(d.me?" (you)":"")}));ros.appendChild(w)});
+  var n1=L.filter(function(d){return d.on}).length;
+  ros.appendChild(h("div",{class:"re",text:L.length+" pet"+(L.length>1?"s":"")+" lahat \u00b7 "+n1+" online"+(loaded||!db?"":" \u00b7 nilo-load ang offline...")}))}
+ chip.onclick=function(){var o=ros.hidden;ros.hidden=!o;chip.setAttribute("aria-expanded",String(o));if(o){fill();if(!loaded)load()}};
+ var _rp=renderPets;renderPets=function(){var r=_rp.apply(this,arguments);if(!ros.hidden)try{fill()}catch(e){}return r};
+})();
 $("cmWrap").addEventListener("click",function(e){if(Date.now()-dragEnd<350)return;if(e.target.closest&&e.target.closest("#cmRoad")){var lt=document.querySelector('#pgTabs [data-p="lane"]');if(lt){lt.click();window.scrollTo({top:0,behavior:"smooth"})}return}var g=e.target.closest&&e.target.closest(".lot");if(g){lotTap(+g.getAttribute("data-lot"));return}walk(e)});
 $("cmWrap").addEventListener("keydown",function(e){var g=e.target.closest&&e.target.closest(".lot");if(g&&(e.key==="Enter"||e.key===" ")){e.preventDefault();lotTap(+g.getAttribute("data-lot"))}});
 function lotTap(n){var all=getStores(),u=null;Object.keys(all).forEach(function(k){if(all[k].lot===n)u=k});
