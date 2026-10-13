@@ -374,14 +374,14 @@ html[data-fnt] .hero h1,html[data-fnt] .hero h1 span,html[data-fnt] .head h2,htm
 /* ===== Layout cleanup (final pass) ===== */
 .wrap{max-width:980px;padding:14px 14px 150px}
 .hero{margin-bottom:12px}
-.hero img{aspect-ratio:auto!important;height:clamp(150px,30vw,270px)!important;object-fit:cover;object-position:center 22%}
+.hero img{aspect-ratio:764/401!important;height:auto!important;max-height:none!important;object-fit:cover;object-position:center}
 .pgtabs{margin-bottom:14px}
 .pgtabs button{padding:8px 6px;font-size:.9rem;white-space:nowrap}
 @media(max-width:560px){.pgtabs button .lg{display:none}.pgtabs button{font-size:.85rem;padding:8px 4px}}
 #pgEngage,#pgMusic,#pgPet{display:flex;flex-direction:column;gap:14px}
 #pgEngage[hidden],#pgMusic[hidden],#pgPet[hidden]{display:none!important}
 #pgEngage>*{margin:0!important}
-#notif{order:1}#pgEngage>.grid{order:2}#pgEngage>.team{order:3}#admin{order:4}#look{order:5}
+#notif{order:1}#pgEngage>.grid{order:2}#pgEngage>.team{order:3}#admin{order:4}#look{order:0}
 .grid{gap:14px;align-items:start}
 .notif{padding:12px 16px}
 .notif h3{margin:8px 0 4px}
@@ -3253,17 +3253,17 @@ document.addEventListener("visibilitychange",function(){if(document.hidden&&user
 /* ===== Announcement board (Firestore: admins post, everyone reads) ===== */
 (function(){
 var COL="announcements",SEEN="an-seen",box=document.getElementById("anBoard");if(!box)return;
-var db=null,uid=null,isAdmin=false,myName="Admin",rows=[],seenAt=0,lastLoad=0,formOpen=false,err=false,errCode="",ready=false;
+var db=null,uid=null,isAdmin=false,myName="Admin",rows=[],seenAt=0,lastLoad=0,formOpen=false,editId=null,editRow=null,err=false,errCode="",ready=false;
 function user(){try{var u=window.firebase&&firebase.auth&&firebase.auth().currentUser;return u&&!u.isAnonymous?u:null}catch(e){return null}}
 function h(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function fmt(ts){try{return new Date(ts).toLocaleDateString(undefined,{month:"short",day:"numeric"})}catch(e){return""}}
-(function(){var st=document.createElement("style");st.textContent="#anBoard .animg{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin:8px 0}#anBoard .anlink{display:inline-block;margin:4px 0;padding:7px 14px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;text-decoration:none}#anBoard .anlink:focus-visible{outline:3px solid var(--today);outline-offset:2px}#anBoard .anpic{margin-top:6px;display:grid;gap:6px;justify-items:start}#anBoard .anpic img{max-width:100%;max-height:220px;border-radius:10px}";document.head.appendChild(st)})();
+(function(){var st=document.createElement("style");st.textContent="#anBoard .animg{display:block;width:auto;max-width:min(100%,240px);max-height:240px;object-fit:cover;border-radius:12px;margin:8px 0;cursor:zoom-in}#anBoard .animg.big{max-width:100%;max-height:420px;cursor:zoom-out}#anBoard .anedit{margin-right:6px}#anBoard .anlink{display:inline-block;margin:4px 0;padding:7px 14px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;text-decoration:none}#anBoard .anlink:focus-visible{outline:3px solid var(--today);outline-offset:2px}#anBoard .anpic{margin-top:6px;display:grid;gap:6px;justify-items:start}#anBoard .anpic img{max-width:100%;max-height:220px;border-radius:10px}";document.head.appendChild(st)})();
 function shrink(file){return new Promise(function(res,rej){if(!/^image\//.test(file.type))return rej();var u=URL.createObjectURL(file),im=new Image();im.onload=function(){URL.revokeObjectURL(u);var m=900,k=Math.min(1,m/Math.max(im.width,im.height)),w=Math.max(1,Math.round(im.width*k)),hh=Math.max(1,Math.round(im.height*k)),c=document.createElement("canvas");c.width=w;c.height=hh;var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,hh);x.drawImage(im,0,0,w,hh);var q=.8,d=c.toDataURL("image/jpeg",q);while(d.length>330000&&q>.4){q-=.1;d=c.toDataURL("image/jpeg",q)}if(d.length>330000)return rej();res(d)};im.onerror=function(){URL.revokeObjectURL(u);rej()};im.src=u})}
 function draw(){
  box.textContent="";
  box.hidden=false;
  var hd=h("div","head");hd.appendChild(h("h2",null,"📢 Announcements"));
- if(isAdmin){var pb=h("button","go",formOpen?"Close":"+ Post");pb.type="button";pb.onclick=function(){formOpen=!formOpen;draw()};hd.appendChild(pb)}
+ if(isAdmin){var pb=h("button","go",formOpen?"Close":"+ Post");pb.type="button";pb.onclick=function(){formOpen=!formOpen;editId=null;editRow=null;draw()};hd.appendChild(pb)}
  box.appendChild(hd);
  if(!ready)box.appendChild(h("p","meta","Sign in to see announcements."));
  else if(err)box.appendChild(h("p","meta","⚠️ Can't load announcements"+(errCode?" ("+errCode+")":"")+". The admin needs to publish the latest firestore.rules in Firebase."));
@@ -3271,24 +3271,27 @@ function draw(){
  if(isAdmin&&formOpen){
   var f=h("div","frm"),ta=h("textarea");ta.maxLength=500;ta.placeholder="Write an announcement (max 500 characters)";
   var li=h("input");li.type="url";li.placeholder="Link (optional), e.g. https://...";li.maxLength=500;li.setAttribute("aria-label","Link");li.style.cssText="width:100%;margin-top:6px";
-  var pic=h("div","anpic"),fi=h("input"),imgData="",pv=h("img"),rm=h("button",null,"Remove picture");fi.type="file";fi.accept="image/*";fi.setAttribute("aria-label","Add picture");pv.alt="Picture preview";pv.hidden=true;rm.type="button";rm.hidden=true;
+  var pic=h("div","anpic"),fi=h("input"),imgData=(editRow&&editRow.img)||"",pv=h("img"),rm=h("button",null,"Remove picture");fi.type="file";fi.accept="image/*";fi.setAttribute("aria-label","Add picture");pv.alt="Picture preview";pv.hidden=!imgData;rm.type="button";rm.hidden=!imgData;if(imgData)pv.src=imgData;if(editRow){ta.value=editRow.t||"";li.value=editRow.link||""}
   fi.onchange=function(){var fl=fi.files&&fi.files[0];if(!fl)return;shrink(fl).then(function(d){imgData=d;pv.src=d;pv.hidden=false;rm.hidden=false}).catch(function(){alert("Couldn't use that picture. Try a different one.");fi.value=""})};
   rm.onclick=function(){imgData="";pv.hidden=true;rm.hidden=true;pv.removeAttribute("src");fi.value=""};
   pic.appendChild(fi);pic.appendChild(pv);pic.appendChild(rm);
-  var row=h("div","row"),lb=h("label",null),cb=h("input");cb.type="checkbox";lb.appendChild(cb);lb.appendChild(document.createTextNode(" \ud83d\udccc Pin on top"));
-  var go=h("button","go","Post");go.type="button";
+  var row=h("div","row"),lb=h("label",null),cb=h("input");cb.type="checkbox";cb.checked=!!(editRow&&editRow.pin);lb.appendChild(cb);lb.appendChild(document.createTextNode(" \ud83d\udccc Pin on top"));
+  var go=h("button","go",editId?"Save":"Post");go.type="button";
   go.onclick=function(){var t=ta.value.trim(),lk=li.value.trim();if(!t&&!imgData){ta.focus();return}
    if(lk&&!/^https?:\/\//i.test(lk)){if(/^[\w-]+(\.[\w-]+)+(\/|$)/.test(lk))lk="https://"+lk;else{li.focus();alert("Enter a valid link that starts with https://");return}}
-   go.disabled=true;var o={t:t.slice(0,500),by:uid,n:myName,at:Date.now(),pin:cb.checked};if(imgData)o.img=imgData;if(lk)o.link=lk.slice(0,500);
+   go.disabled=true;
+   if(editId){var DEL=firebase.firestore.FieldValue.delete(),u2={t:t.slice(0,500),pin:cb.checked,img:imgData?imgData:DEL,link:lk?lk.slice(0,500):DEL};
+    db.collection(COL).doc(editId).update(u2).then(function(){formOpen=false;editId=null;editRow=null;return load(true)}).catch(function(e){console.error(e);go.disabled=false;alert("Could not save changes.")});return}
+   var o={t:t.slice(0,500),by:uid,n:myName,at:Date.now(),pin:cb.checked};if(imgData)o.img=imgData;if(lk)o.link=lk.slice(0,500);
    db.collection(COL).add(o).then(function(){formOpen=false;return load(true)}).catch(function(e){console.error(e);go.disabled=false;alert("Could not post. Check that the announcements rule is published in Firestore.")})};
   row.appendChild(lb);row.appendChild(go);f.appendChild(ta);f.appendChild(li);f.appendChild(pic);f.appendChild(row);box.appendChild(f)}
  rows.forEach(function(r){
   var it=h("div","it");if(r.t||r.pin)it.appendChild(h("div",null,(r.pin?"📌 ":"")+r.t));
-  if(r.img){var im=h("img","animg");im.src=r.img;im.alt="Announcement picture";im.loading="lazy";it.appendChild(im)}
+  if(r.img){var im=h("img","animg");im.src=r.img;im.alt="Announcement picture";im.loading="lazy";im.onclick=function(){im.classList.toggle("big")};it.appendChild(im)}
   if(r.link){var al=h("a","anlink","🔗 Open link");al.href=r.link;al.target="_blank";al.rel="noopener noreferrer";it.appendChild(al)}
   var m=h("div","meta");m.appendChild(h("span",null,(r.n||"Admin")+" · "+fmt(r.at)));
   if(r.at>seenAt)m.appendChild(h("span","new","NEW"));
-  if(isAdmin){var d=h("button",null,"Delete");d.type="button";d.onclick=function(){if(!confirm("Delete this announcement?"))return;db.collection(COL).doc(r.id).delete().then(function(){return load(true)}).catch(function(e){console.error(e);alert("Could not delete.")})};m.appendChild(d)}
+  if(isAdmin){var ed=h("button","anedit","Edit");ed.type="button";ed.onclick=function(){editId=r.id;editRow=r;formOpen=true;draw();var fm=box.querySelector(".frm");if(fm&&fm.scrollIntoView)fm.scrollIntoView({block:"center"})};m.appendChild(ed);var d=h("button",null,"Delete");d.type="button";d.onclick=function(){if(!confirm("Delete this announcement?"))return;db.collection(COL).doc(r.id).delete().then(function(){return load(true)}).catch(function(e){console.error(e);alert("Could not delete.")})};m.appendChild(d)}
   it.appendChild(m);box.appendChild(it)});
  if(rows.length){try{localStorage.setItem(SEEN,String(rows.reduce(function(a,r){return Math.max(a,r.at)},0)))}catch(e){}}
 }
