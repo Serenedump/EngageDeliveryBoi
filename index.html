@@ -354,6 +354,17 @@ html[data-fnt] .hero h1,html[data-fnt] .hero h1 span,html[data-fnt] .head h2,htm
 #mhForm label{font-size:.85rem;color:var(--mute);display:grid;gap:4px}
 #mhForm .btns{display:flex;gap:8px}
 #mhPrev{max-width:100%;max-height:160px;border-radius:12px;object-fit:cover}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
+.dc{margin:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:color-mix(in srgb,var(--bg) 55%,var(--panel));display:flex;flex-direction:column}
+.dc .dcb{display:block;width:100%;padding:0;border:0;border-radius:0;background:var(--line);cursor:zoom-in;line-height:0}
+.dc .dcb img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.dc figcaption{padding:7px 10px;font-size:.82rem;overflow-wrap:anywhere}
+.dc .dcd{margin:0 8px 8px;font-size:.78rem;padding:4px 10px;border-radius:999px}
+#mhThumbs{display:flex;gap:6px;flex-wrap:wrap}#mhThumbs img{width:56px;height:56px;border-radius:10px;object-fit:cover}
+#mhZoom{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px}
+#mhZoom img{max-width:100%;max-height:78vh;max-height:78dvh;border-radius:12px;object-fit:contain}
+#mhZoom p{margin:0;color:#fff;text-align:center;max-width:560px;overflow-wrap:anywhere}
+#mhZoom .zb{display:flex;gap:8px}#mhZoom .zb button{background:#fff;color:#1d1a14;border-color:#fff;font-weight:700;min-height:40px;padding:6px 16px;border-radius:999px}
 @media(max-width:520px){.act .ph{width:68px;height:68px}}
 </style>
 <style>
@@ -514,9 +525,11 @@ body.on-pet #epet,body.on-pet #epet-show{display:none!important}
 #anBoard .it.latest::before{content:"Latest";position:absolute;top:-9px;right:12px;background:#f29a1f;color:#1d1a14;font-size:.72rem;font-weight:800;border-radius:999px;padding:2px 10px}
 #anBoard .it.latest .antx{font-size:1.1rem;font-weight:600}
 #anBoard .it{transition:box-shadow .2s}#anBoard .it:hover{box-shadow:0 6px 16px rgba(0,0,0,.14)}
-.day.full:not(.sel){background-image:none;background-color:#ffe3b0;color:#1d1a14}
+.day.full:not(.sel){background-image:none;background-color:transparent;color:#1d1a14}
 .day.full::before{display:block!important;top:6px;right:14px;width:15px;height:15px;line-height:15px;font-size:.7rem;font-weight:900;background:#3f8f2a;color:#fff;box-shadow:0 0 0 2px #fff;z-index:4}
 .day span:first-child{position:relative;z-index:3;font-weight:700}
+.day.full::before{display:none!important}
+.day.full:not(.sel) span:first-child::after{content:"\2713";display:inline-block;margin-left:3px;color:#3f8f2a;font-weight:900;font-size:.85em}
 #days{position:relative}
 .day.today::after{display:none!important}
 #calRider{position:absolute;left:0;top:0;z-index:5;pointer-events:none;opacity:0;transition-property:transform,opacity;transition-timing-function:cubic-bezier(.45,.05,.3,1)}
@@ -2412,13 +2425,41 @@ var RSEL=null,_dc=drawRoom;drawRoom=function(){_dc();if(!pedit||!proom||ROOMV===
  RS.rot=RS.rot||{};box.appendChild(el("p","prl","View"));var vw=el("div","prw");vw.style.cssText="display:flex;gap:6px;flex-wrap:wrap";
  VWN.forEach(function(n,vi){var b=document.createElement("button");b.type="button";b.textContent=n;b.setAttribute("aria-pressed",String((RS.rot[RSEL]||0)===vi));b.style.cssText="min-height:44px;padding:6px 14px;border-radius:999px;font-weight:700"+((RS.rot[RSEL]||0)===vi?";background:var(--ink);color:var(--bg)":"");b.onclick=function(){if(vi)RS.rot[RSEL]=vi;else delete RS.rot[RSEL];rsave();drawRoom()};vw.appendChild(b)});box.appendChild(vw);proom.appendChild(box)};
 /* ===== House overview (cutaway of all rooms) ===== */
-function houseSVG(){var s='<svg viewBox="0 0 300 230" class="rsc" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="House"><style>.hroom{cursor:pointer}.hroom:focus-visible{outline:2px solid #d9232a}.hroom:hover .hb{opacity:.85}</style>'
- +'<rect width="300" height="230" fill="#bfe3ff"/><ellipse cx="60" cy="30" rx="26" ry="8" fill="#fff" opacity=".8"/><ellipse cx="248" cy="46" rx="22" ry="7" fill="#fff" opacity=".8"/><ellipse cx="150" cy="232" rx="200" ry="26" fill="#8fd16b"/>'
+var YK="boi-yard-v1",YEDIT=false,YSEL="\ud83c\udf37",YPAL=["\ud83c\udf37","\ud83c\udf3b","\ud83c\udf39","\ud83c\udf33","\ud83c\udf34","\ud83c\udf44","\ud83e\udd8b","\ud83d\udc1d","\u26f2","\ud83e\udeb4","\ud83c\udf35","\ud83e\ude91","\ud83d\udecb\ufe0f","\ud83e\uddfa","\ud83c\udfee","\ud83c\udf88","\ud83c\udf08","\u2601\ufe0f","\ud83d\udc26","\ud83d\udc15"],YS=[];
+(function(){try{var j=JSON.parse(localStorage.getItem(YK)||"[]");if(Array.isArray(j))YS=j.filter(function(p){return Array.isArray(p)&&YPAL.indexOf(p[0])>-1&&isFinite(p[1])&&isFinite(p[2])}).slice(0,60)}catch(e){}})();
+var YERR=false,YPULL=false,YRULES="match /yards/{u} {\n  allow read: if request.auth != null;\n  allow write: if request.auth != null && request.auth.uid == u;\n}";
+function yfb(){try{var u=window.firebase&&firebase.auth&&firebase.auth().currentUser;return u&&!u.isAnonymous&&firebase.firestore?{uid:u.uid,db:firebase.firestore()}:null}catch(e){return null}}
+function yfail(e){console.error(e);if(!YERR){YERR=true;try{drawHouse()}catch(x){}}}
+function ysave(){try{localStorage.setItem(YK,JSON.stringify(YS))}catch(e){}var f=yfb();if(f)f.db.doc("yards/"+f.uid).set({uid:f.uid,items:YS.map(function(p){return p[0]+"|"+p[1]+"|"+p[2]}),t:Date.now()}).catch(yfail)}
+function ypull(){if(YPULL)return;var f=yfb();if(!f)return;YPULL=true;f.db.doc("yards/"+f.uid).get().then(function(d){if(!d.exists)return;var it=d.data().items;if(!Array.isArray(it))return;var n=[];it.slice(0,60).forEach(function(r){var q=String(r).split("|"),e=q[0],x=+q[1],y=+q[2];if(YPAL.indexOf(e)>-1&&isFinite(x)&&isFinite(y))n.push([e,x,y])});YS=n;try{localStorage.setItem(YK,JSON.stringify(YS))}catch(e){}if(!YEDIT)drawHouse()}).catch(yfail)}
+function houseSVG(){var s='<svg viewBox="0 0 300 262" class="rsc" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="House"><style>.hroom{cursor:pointer}.hroom:focus-visible{outline:2px solid #d9232a}.hroom:hover .hb{opacity:.85}</style>'
+ +'<defs><linearGradient id="hsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd6ff"/><stop offset="1" stop-color="#e3f4ff"/></linearGradient></defs><rect width="300" height="262" fill="url(#hsky)"/><circle cx="270" cy="24" r="12" fill="#ffd95e"/><circle cx="270" cy="24" r="17" fill="#ffd95e" opacity=".3"/><path d="M0 200Q50 150 110 190Q170 140 240 188Q275 165 300 185V262H0Z" fill="#a8dd8a"/><path d="M104 36q4-5 8 0q4-5 8 0M218 62q3-4 6 0q3-4 6 0" fill="none" stroke="#6b7a8a" stroke-width="1.2"/>'
+ +'<rect x="0" y="0" width="0" height="0"/><ellipse cx="60" cy="30" rx="26" ry="8" fill="#fff" opacity=".8"/><ellipse cx="248" cy="46" rx="22" ry="7" fill="#fff" opacity=".8"/><path d="M0 214Q150 200 300 214V262H0Z" fill="#8fd16b"/>'
  +'<polygon points="150,10 20,82 280,82" fill="#e8a066" stroke="#c97b43" stroke-width="3" stroke-linejoin="round"/><polygon points="150,26 46,82 254,82" fill="#ffd6e0"/>'
  +'<path d="M62 76Q106 58 150 72Q194 58 238 76" fill="none" stroke="#7a5a3a" stroke-width=".8"/>';
  [74,92,112,132,150,168,188,208,226].forEach(function(x,i){var y=x<150?72-Math.abs(150-x)*.0+(-((x-62)*(150-x))/-1800*0):0;s+='<circle cx="'+x+'" cy="'+(x<150?(76-(x-62)*.18):(76-(238-x)*.18)).toFixed(1)+'" r="1.7" fill="'+["#ffe36f","#ff9ec0","#8fd3ee"][i%3]+'"/>'});
  s+='<circle cx="150" cy="52" r="12" fill="#cfeaff" stroke="#c98a55" stroke-width="3"/><path d="M150 40V64M138 52H162" stroke="#c98a55" stroke-width="2"/>'
  +'<rect x="44" y="82" width="212" height="132" fill="#ffd1dc" stroke="#f08fb0" stroke-width="4"/><rect x="44" y="138" width="212" height="8" fill="#d99a5b"/><rect x="44" y="206" width="212" height="8" fill="#d99a5b"/>';
+
+ s+='<g pointer-events="none">'
+ /* side trees */
+ +'<rect x="16" y="150" width="7" height="64" fill="#9a6a3c"/><circle cx="19" cy="140" r="22" fill="#4fae5a"/><circle cx="8" cy="152" r="14" fill="#5fc06a"/><circle cx="32" cy="154" r="13" fill="#5fc06a"/><circle cx="14" cy="130" r="3" fill="#ff6f8f"/><circle cx="27" cy="143" r="3" fill="#ff6f8f"/><circle cx="10" cy="150" r="3" fill="#ff6f8f"/>'
+ +'<rect x="282" y="172" width="6" height="42" fill="#9a6a3c"/><circle cx="285" cy="164" r="16" fill="#4fae5a"/><circle cx="276" cy="174" r="10" fill="#5fc06a"/>'
+ /* balcony (right of upper floor) */
+ +'<rect x="254" y="132" width="40" height="5" rx="1" fill="#d99a5b" stroke="#b97a3b" stroke-width=".8"/><path d="M257 137v7M291 137v7" stroke="#b97a3b" stroke-width="1.5"/>'
+ +'<rect x="254" y="112" width="40" height="3" fill="#fff" stroke="#e9c6a6" stroke-width=".6"/><path d="M258 115v17M264 115v17M270 115v17M276 115v17M282 115v17M288 115v17M293 115v17" stroke="#fff" stroke-width="1.6"/><rect x="254" y="128" width="40" height="2.5" fill="#fff"/>'
+ +'<path d="M254 112Q264 120 274 112Q284 120 294 112" fill="none" stroke="#ffd95e" stroke-width="1"/><circle cx="264" cy="117" r="1.6" fill="#ffe36f"/><circle cx="284" cy="117" r="1.6" fill="#ff9ec0"/>'
+ +'<rect x="258" y="122" width="9" height="10" rx="1.5" fill="#d9764a"/><circle cx="262.500" cy="119" r="4.500" fill="#5fc06a"/><circle cx="260" cy="117" r="2" fill="#ff6f8f"/><circle cx="265" cy="118" r="2" fill="#ffd24d"/>'
+ +'<rect x="276" y="123" width="12" height="3" fill="#b97a3b"/><path d="M278 126v6M286 126v6" stroke="#b97a3b" stroke-width="1.4"/><rect x="278" y="119" width="8" height="4" rx="1" fill="#fff"/>'
+ /* garden: path, fence, bushes, flowers, mailbox */
+ +'<path d="M138 214L128 262H172L162 214Z" fill="#e8d3b0"/><g fill="#d6bd96"><ellipse cx="150" cy="224" rx="9" ry="2.500"/><ellipse cx="150" cy="238" rx="11" ry="3"/><ellipse cx="150" cy="253" rx="13" ry="3.500"/></g>'
+ +'<g fill="#fff" stroke="#e5d3bd" stroke-width=".8"><path d="M0 232h120M180 232h120" fill="none" stroke="#e5d3bd" stroke-width="2"/>';
+ for(var f=4;f<300;f+=12){if(f>118&&f<182)continue;s+='<path d="M'+f+' 244V228l3-4l3 4V244Z"/>'}
+ s+='</g>'
+ +'<ellipse cx="62" cy="222" rx="18" ry="9" fill="#4fae5a"/><ellipse cx="238" cy="222" rx="18" ry="9" fill="#4fae5a"/><ellipse cx="96" cy="221" rx="12" ry="7" fill="#5fc06a"/><ellipse cx="204" cy="221" rx="12" ry="7" fill="#5fc06a"/>';
+ var FL=[[30,250,"#ff6f8f"],[48,254,"#ffd24d"],[66,249,"#fff"],[84,255,"#ff9ec0"],[102,251,"#b28cff"],[114,257,"#ffd24d"],[186,257,"#ff6f8f"],[198,251,"#fff"],[216,255,"#ffd24d"],[234,249,"#b28cff"],[252,254,"#ff9ec0"],[270,250,"#ff6f8f"],[56,224,"#ff6f8f"],[68,220,"#ffe36f"],[232,223,"#ff9ec0"],[244,220,"#fff"]];
+ FL.forEach(function(p){s+='<path d="M'+p[0]+' '+(p[1]+1)+'v7" stroke="#3f8f3a" stroke-width="1.2"/><circle cx="'+(p[0]-2.4)+'" cy="'+p[1]+'" r="2.2" fill="'+p[2]+'"/><circle cx="'+(p[0]+2.4)+'" cy="'+p[1]+'" r="2.2" fill="'+p[2]+'"/><circle cx="'+p[0]+'" cy="'+(p[1]-2.4)+'" r="2.2" fill="'+p[2]+'"/><circle cx="'+p[0]+'" cy="'+(p[1]+2.4)+'" r="2.2" fill="'+p[2]+'"/><circle cx="'+p[0]+'" cy="'+p[1]+'" r="1.6" fill="#ffb300"/>'});
+ s+='<rect x="2" y="226" width="3" height="20" fill="#9a6a3c"/><rect x="-3" y="217" width="13" height="10" rx="2" fill="#d9232a"/><rect x="0" y="220" width="7" height="2" fill="#fff"/><path d="M122 214v-6M178 214v-6" stroke="#7a5a3a"/><circle cx="122" cy="206" r="3.500" fill="#ffd95e"/><circle cx="178" cy="206" r="3.500" fill="#ffd95e"/></g>';
  var R=[["bed","Bedroom",48,84,102,52,"#ffe3ea","#444"],["music","Music Room",150,84,102,52,"#4c3f8e","#fff"],["sala","Sala",48,148,72,56,"#ffe9d6","#444"],["kit","Kitchen",120,148,76,56,"#fff1c9","#444"],["bath","Shower",196,148,56,56,"#d8f0f7","#444"]],bx={bed:[72,132],music:[198,132],sala:[100,202],kit:[158,202],bath:[216,202]};
  R.forEach(function(r){var tw=r[1].length*4.2+8;s+='<g class="hroom" data-r="'+r[0]+'" tabindex="0" role="button" aria-label="Open '+r[1]+'"><rect class="hb" x="'+r[2]+'" y="'+r[3]+'" width="'+r[4]+'" height="'+r[5]+'" fill="'+r[6]+'"/>';
   if(r[0]==="bed")s+='<rect x="56" y="108" width="6" height="24" fill="#d9a066"/><rect x="60" y="116" width="46" height="14" rx="3" fill="#b8a5f2"/><ellipse cx="68" cy="116" rx="6" ry="3" fill="#fff"/><circle cx="128" cy="100" r="7" fill="#cfeaff" stroke="#d9a066" stroke-width="2"/><rect x="118" y="116" width="26" height="4" fill="#d9a066"/><rect x="122" y="120" width="3" height="12" fill="#d9a066"/><rect x="137" y="120" width="3" height="12" fill="#d9a066"/>';
@@ -2429,13 +2470,27 @@ function houseSVG(){var s='<svg viewBox="0 0 300 230" class="rsc" xmlns="http://
   s+='<rect x="'+(r[2]+3)+'" y="'+(r[3]+3)+'" width="'+tw+'" height="10" rx="5" fill="#fff" opacity=".88"/><text x="'+(r[2]+7)+'" y="'+(r[3]+10.8)+'" font-size="7" font-weight="800" fill="#444" font-family="system-ui,sans-serif">'+r[1]+'</text></g>'});
  s+='<g pointer-events="none"><path d="M120 148V204" stroke="#c9873f" stroke-width="2"/>';
  for(var k=0;k<6;k++)s+='<ellipse cx="'+(120+(k%2?7:-7))+'" cy="'+(152+k*9)+'" rx="8" ry="2.6" fill="#e9b27a" stroke="#c9873f" stroke-width=".8"/>';
+ s+='<g pointer-events="none" text-anchor="middle" font-size="14" font-family="system-ui,sans-serif">';
+ YS.forEach(function(p){s+='<text x="'+p[1]+'" y="'+p[2]+'" dy=".35em">'+p[0]+'</text>'});
+ s+='</g>';if(YEDIT)s+='<rect width="300" height="262" fill="transparent" style="cursor:copy" data-yard="1"/>';
  var b=bx[SLP?"bed":LASTRV]||bx.sala;s+='</g><text x="'+b[0]+'" y="'+b[1]+'" font-size="15" text-anchor="middle" pointer-events="none">'+(SLP?"\ud83d\ude34":"\ud83d\udc36")+'</text></svg>';
  return s}
 function drawHouse(){proom.textContent="";proom.classList.remove("edit");pedit=false;
- var hd=el("div","prh");hd.appendChild(el("h3",null,"House \ud83c\udfe0"));proom.appendChild(hd);
+ var hd=el("div","prh");hd.appendChild(el("h3",null,"House \ud83c\udfe0"));
+ var yb=el("button",null,YEDIT?"\u2705 Done":"\ud83c\udf3f Decorate outside");yb.type="button";yb.onclick=function(){YEDIT=!YEDIT;drawHouse()};hd.appendChild(yb);proom.appendChild(hd);
+ if(YEDIT){var pl=el("div","prw");pl.style.cssText="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px";
+  YPAL.forEach(function(e){var b=document.createElement("button");b.type="button";b.textContent=e;b.setAttribute("aria-pressed",String(e===YSEL));b.setAttribute("aria-label","Pick "+e);b.style.cssText="min-width:44px;min-height:44px;font-size:1.3rem;border-radius:12px"+(e===YSEL?";outline:3px solid #f29a1f":"");b.onclick=function(){YSEL=e;drawHouse()};pl.appendChild(b)});
+  var cl=document.createElement("button");cl.type="button";cl.textContent="\ud83e\uddf9 Clear all";cl.style.cssText="min-height:44px;padding:6px 14px;border-radius:999px;font-weight:700";cl.onclick=function(){if(YS.length&&confirm("Remove all outside decor?")){YS=[];ysave();drawHouse()}};pl.appendChild(cl);proom.appendChild(pl)}
  var sc=el("div","prs");sc.innerHTML=houseSVG();proom.appendChild(sc);
- sc.querySelectorAll(".hroom").forEach(function(g){var go=function(){ROOMV=g.getAttribute("data-r");LASTRV=ROOMV;pedit=false;drawRoom();roomBoi()};g.addEventListener("click",go);g.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
- proom.appendChild(el("p","prn",SLP?"Boi is asleep in the bedroom. Tap a room to look inside.":"Tap a room to go inside."))}
+ var sv=sc.querySelector("svg"),ov=sc.querySelector("[data-yard]");ypull();
+ if(ov)ov.addEventListener("click",function(ev){var pt=sv.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;var q=pt.matrixTransform(sv.getScreenCTM().inverse()),x=Math.round(q.x),y=Math.round(q.y);
+  for(var k=YS.length-1;k>=0;k--)if(Math.abs(YS[k][1]-x)<9&&Math.abs(YS[k][2]-y)<9){YS.splice(k,1);ysave();drawHouse();return}
+  if(x>46&&x<254&&y>84&&y<212)return;
+  if(YS.length>=60){alert("That's a lot of decor! Tap one to remove it first.");return}
+  YS.push([YSEL,x,y]);ysave();drawHouse()});
+ sc.querySelectorAll(".hroom").forEach(function(g){var go=function(){if(YEDIT)return;ROOMV=g.getAttribute("data-r");LASTRV=ROOMV;pedit=false;drawRoom();roomBoi()};g.addEventListener("click",go);g.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
+ if(YERR){var er=el("div","prn");er.appendChild(el("p",null,"Your outside decor is saved on this phone only. To keep it on all your devices, add this rule in Firebase console \u2192 Firestore \u2192 Rules (inside the documents block), then Publish."));var pr=el("pre");pr.textContent=YRULES;pr.style.cssText="white-space:pre-wrap;font-size:.75rem";er.appendChild(pr);proom.appendChild(er)}
+ proom.appendChild(el("p","prn",YEDIT?"Pick an item, then tap outside the house to place it. Tap a placed item to remove it.":(SLP?"Boi is asleep in the bedroom. Tap a room to look inside.":"Tap a room to go inside.")))}
 /* ===== Pet name: apply everywhere ===== */
 function applyName(){
  var t=document.querySelector('#pgTabs [data-p="pet"]');if(t)t.textContent="\ud83d\udc3e Pet "+pnShort();
@@ -2510,7 +2565,7 @@ window.BoiPage={
  async function startHub(){
   hit("hub");loadTally();
   if(!tlWired){tlWired=true;var ml=$("mhList");if(ml)ml.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("article.rs a, #shTry");if(t)hit("stationhead")})}
-  if(!timer)timer=setInterval(function(){if(!document.hidden&&!$("mhForm"))load()},180000);
+  if(!timer)timer=setInterval(function(){if(!document.hidden&&!$("mhForm")){load();if(flt==="docs")loadDocs()}},180000);
   if(started){load();return}started=true;state="loading";draw();
   setAdmin(true);
   load();
@@ -2521,10 +2576,72 @@ window.BoiPage={
   try{if(await rpc("musichub_check",{p_pass:v.trim()})){pass=v.trim();try{sessionStorage.setItem("mh-pass",pass)}catch(e){}setAdmin(true)}else alert("Wrong passcode.")}
   catch(e){alert("Could not check the passcode. Is the Music Hub SQL set up in Supabase?")}
  };
+ /* ===== Documentation: photos of collab partners / people who joined ===== */
+ var DOCS=[],dState="idle";
+ function loadDocs(){if(dState==="idle")dState="loading";
+  return api("musichub_docs?select=id,caption,photo,created_at&order=created_at.desc&limit=200").then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
+   .then(function(j){DOCS=j.filter(function(x){return /^data:image\//.test(x.photo||"")});dState="ok";if(flt==="docs")draw()})
+   .catch(function(e){console.error(e);if(dState!=="ok"){dState="err";if(flt==="docs")draw()}})}
+ function zoom(i){
+  var old=$("mhZoom");if(old)old.remove();
+  var x=DOCS[i];if(!x)return;
+  var o=document.createElement("div");o.id="mhZoom";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label","Photo");
+  o.innerHTML='<img alt="'+esc(x.caption||"Photo")+'" src="'+x.photo+'">'+(x.caption?'<p>'+esc(x.caption)+'</p>':"")
+   +'<div class="zb"><button type="button" id="zPrev" aria-label="Previous photo">\u2039</button><button type="button" id="zClose">Close</button><button type="button" id="zNext" aria-label="Next photo">\u203a</button></div>';
+  document.body.appendChild(o);
+  var close=function(){o.remove();document.removeEventListener("keydown",key)};
+  var go=function(d){close();zoom((i+d+DOCS.length)%DOCS.length)};
+  var key=function(e){if(e.key==="Escape")close();else if(e.key==="ArrowLeft")go(-1);else if(e.key==="ArrowRight")go(1)};
+  document.addEventListener("keydown",key);
+  o.onclick=function(e){if(e.target===o)close()};
+  $("zClose").onclick=close;$("zPrev").onclick=function(){go(-1)};$("zNext").onclick=function(){go(1)};
+  if(DOCS.length<2){$("zPrev").hidden=true;$("zNext").hidden=true}
+  $("zClose").focus();
+ }
+ function docs(L){
+  if(dState==="idle"){loadDocs();L.innerHTML='<p class="empty">Loading…</p>';return}
+  if(dState==="loading"){L.innerHTML='<p class="empty">Loading…</p>';return}
+  if(dState==="err"){L.innerHTML='<p class="empty">Could not load the photos. Check your connection, then reopen this tab. (Admin: make sure the Documentation SQL was run in Supabase.)</p>';return}
+  var h='<p class="sum">Photo documentation of our collabs and everyone who joined.'+(DOCS.length?" · "+DOCS.length+" photo"+(DOCS.length===1?"":"s"):"")+'</p>';
+  if(!DOCS.length)h+='<p class="empty">'+(canEdit?"No photos yet. Tap “+ Add photos”.":"No photos yet. Check back soon.")+'</p>';
+  else{h+='<div class="dgrid">';
+   DOCS.forEach(function(x,i){h+='<figure class="dc"><button type="button" class="dcb" data-z="'+i+'" aria-label="View photo'+(x.caption?": "+esc(x.caption):"")+'"><img loading="lazy" alt="'+esc(x.caption||"Photo")+'" src="'+x.photo+'"></button>'
+    +(x.caption?'<figcaption>'+esc(x.caption)+'</figcaption>':"")
+    +(canEdit?'<button type="button" class="dcd" data-x="'+esc(x.id)+'">Delete</button>':"")+'</figure>'});
+   h+='</div>'}
+  L.innerHTML=h;
+  L.querySelectorAll("[data-z]").forEach(function(b){b.onclick=function(){zoom(+b.dataset.z)}});
+  L.querySelectorAll("[data-x]").forEach(function(b){b.onclick=function(){
+   if(!confirm("Delete this photo?"))return;
+   rpc("musichub_doc_delete",{p_pass:pass,p_id:b.dataset.x}).then(loadDocs).catch(function(e){console.error(e);alert("Could not delete. Check your connection and passcode.")})}});
+ }
+ function openDocForm(){
+  var o=document.createElement("div");o.id="mhForm";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label","Add photos");
+  o.innerHTML='<form><h2 style="margin:0">Add photos</h2>'
+   +'<label>Photos (you can pick many)<input id="mdPh" type="file" accept="image/*" multiple></label>'
+   +'<div id="mhThumbs"></div>'
+   +'<label>Caption (optional, e.g. names of who joined)<input id="mdCa" maxlength="120"></label>'
+   +'<p id="mfMsg" role="alert" style="margin:0;min-height:1.2em;color:#c0392b;font-size:.88rem"></p>'
+   +'<div class="btns"><button class="go" type="submit" id="mfSave">Upload</button><button type="button" id="mfCancel">Cancel</button></div></form>';
+  document.body.appendChild(o);
+  var close=function(){o.remove()};
+  $("mfCancel").onclick=close;
+  $("mdPh").onchange=function(){var t=$("mhThumbs");t.innerHTML="";Array.prototype.slice.call(this.files,0,12).forEach(function(f){var im=document.createElement("img");im.alt="";im.src=URL.createObjectURL(f);t.appendChild(im)})};
+  o.querySelector("form").onsubmit=async function(e){e.preventDefault();
+   var fl=Array.prototype.slice.call($("mdPh").files,0,12),m=$("mfMsg");
+   if(!fl.length){m.textContent="Choose at least one photo.";return}
+   var cap=$("mdCa").value.trim();$("mfSave").disabled=true;var done=0;
+   try{
+    for(var i=0;i<fl.length;i++){m.style.color="var(--mute)";m.textContent="Uploading "+(i+1)+" of "+fl.length+"…";
+     var data=await shrink(fl[i]);await rpc("musichub_doc_save",{p_pass:pass,p_caption:cap,p_photo:data});done++}
+    close();loadDocs();
+   }catch(er){console.error(er);m.style.color="#c0392b";m.textContent=(done?done+" uploaded. ":"")+"Could not upload. Check your connection and passcode (and that the Documentation SQL was run).";$("mfSave").disabled=false;if(done)loadDocs()}};
+ }
  function chips(){
   var h='<button type="button" data-f="all" aria-pressed="'+(flt==="all")+'">All</button>';
   Object.keys(TYPES).filter(function(k){return k!=="ls"}).forEach(function(k){h+='<button type="button" data-f="'+k+'" aria-pressed="'+(flt===k)+'">'+TYPES[k][0]+'</button>'});
   h+='<button type="button" data-f="radio" aria-pressed="'+(flt==="radio")+'">📻 Radio Requests</button>';
+  h+='<button type="button" data-f="docs" aria-pressed="'+(flt==="docs")+'">📸 Documentation</button>';
   $("mhChips").innerHTML=h;
   $("mhChips").querySelectorAll("button").forEach(function(b){b.onclick=function(){flt=b.dataset.f;draw()}});
  }
@@ -2556,6 +2673,8 @@ var RS=[{"freq": "92.3", "name": "FMR Manila", "note": "Banana Krew (#9)", "link
  function shCard(){return '<article class="act rs"><div class="ph none t-sh rf">📻</div><div class="bd"><span class="tt">WadLounge on Stationhead</span><span class="wh">Live listening and streaming parties</span><div class="ac"><a class="open" href="https://share.stationhead.com/ldf436e05hhw" target="_blank" rel="noopener noreferrer">Listen on Stationhead</a><a href="https://app.stationhead.com/wadllounge" target="_blank" rel="noopener noreferrer">Open in browser</a><button type="button" id="shTry">Try player here</button></div><div id="shBox"></div></div></article>'}
  function draw(){
   chips();var L=$("mhList");
+  $("mhAdd").textContent=flt==="docs"?"+ Add photos":"+ Add activity";
+  if(flt==="docs"){docs(L);return}
   if(flt==="radio"){radio(L);return}
   if(state==="loading"||state==="idle"){L.innerHTML='<p class="empty">Loading…</p>';return}
   if(state==="err"){L.innerHTML='<p class="empty">Could not load the Music Hub. Check your connection, then reopen this tab.</p>';return}
@@ -2611,7 +2730,7 @@ var RS=[{"freq": "92.3", "name": "FMR Manila", "note": "Banana Krew (#9)", "link
    }catch(er){console.error(er);$("mfMsg").textContent=(d.p_ty==="pj"&&/check|constraint|type|ty\b/i.test(String(er&&er.message)))?"Project type isn't enabled in Supabase yet. See the SQL note.":"Could not save. Check your connection and passcode.";$("mfSave").disabled=false}};
   $("mfTi").focus();
  }
- $("mhAdd").onclick=function(){openForm(null)};
+ $("mhAdd").onclick=function(){if(flt==="docs")openDocForm();else openForm(null)};
  var fromHash=function(){return location.hash==="#music"?"music":location.hash==="#pet"?"pet":location.hash==="#community"?"community":location.hash==="#lane"?"lane":location.hash==="#residence"?"residence":"engage"};
  var want="engage";try{want=location.hash==="#music"?"music":location.hash==="#pet"?"pet":location.hash==="#community"?"community":location.hash==="#lane"?"lane":location.hash==="#residence"?"residence":(localStorage.getItem("engage-page")||"engage")}catch(e){}
  setPage(want==="music"||want==="pet"||want==="community"||want==="lane"||want==="residence"?want:"engage",false);
