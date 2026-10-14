@@ -960,8 +960,10 @@ const CHC={},CHK="boi-chc-v2";
 try{const j=JSON.parse(localStorage.getItem(CHK)||"null");if(j&&typeof j==="object")Object.keys(j).forEach(k=>{if(typeof j[k]==="string"&&j[k].length<40000)CHC[k]=j[k]})}catch(e){}
 const CHF={};
 function chSaveC(){try{localStorage.setItem(CHK,JSON.stringify(CHC))}catch(e){}}
+let HFP=null;
+function houseFoots(){if(!HFP)HFP=db?db.collection("park_houses").get().then(q=>{const m={};q.forEach(d=>{const v=d.data();if(v&&typeof v.uid==="string"&&typeof v.foot==="string"&&v.foot.length<40000&&v.foot.indexOf("<image")>=0)m[v.uid]=v.foot});return m}).catch(()=>{HFP=null;return {}}):Promise.resolve({});return HFP}
 async function chibiFor(ids){const miss=ids.filter(i=>!CHF[i]);miss.forEach(i=>CHF[i]=1);
- if(db&&miss.length)await Promise.all(miss.map(async i=>{try{const d=await db.doc("park_presence/"+i).get(),dd=d.exists?d.data():{},f=(typeof dd.ride==="string"&&dd.ride.indexOf("<image")>=0)?dd.ride:(dd.foot||"");if(typeof f==="string"&&f.length<40000&&f.indexOf("<image")>=0)CHC[i]=f;else if(!(i in CHC))CHC[i]=""}catch(e){if(!(i in CHC))CHC[i]=""}}));
+ if(db&&miss.length)await Promise.all(miss.map(async i=>{try{const d=await db.doc("park_presence/"+i).get(),dd=d.exists?d.data():{},ok=x=>typeof x==="string"&&x.length<40000&&x.indexOf("<image")>=0;let f=[dd.ride,dd.foot].find(ok)||"";if(!f){const hm=await houseFoots();f=hm[i]||""}if(f)CHC[i]=f;else if(!(i in CHC))CHC[i]=""}catch(e){if(!(i in CHC))CHC[i]=""}}));
  if(miss.length)chSaveC();
  try{const sn=window.BoiPage&&BoiPage.snap();if(sn&&(sn.mride||sn.mfoot)){CHC[uid]=sn.mride||sn.mfoot;chSaveC()}}catch(e){}}
 let pfT=0,pfN=0;pfT=setInterval(()=>{pfN++;try{if(online&&uid&&S.roster&&[...S.roster].length){clearInterval(pfT);const ids=[...new Set([...S.roster,uid])];chibiFor(ids).then(()=>{const T=document.getElementById("team");if(T)fillChibis(T)})}}catch(e){}if(pfN>60)clearInterval(pfT)},1000);
@@ -3830,14 +3832,14 @@ root.innerHTML='<section class="card cm"><div class="head"><h2>Ashleyville üèòÔ
  var chip=$("cmChip"),ros=$("cmRoster");if(!chip||!ros)return;
  var ALL={},loaded=false,loading=false;
  function load(){if(!db||loading)return;loading=true;
-  var a=db.collection("park_presence").limit(300).get().then(function(q){q.forEach(function(d){var v=normP(d.data());if(v)ALL[d.id]={n:v.n,foot:v.foot,ride:v.ride}})}).catch(function(){});
-  var b=db.collection("park_houses").get().then(function(q){q.forEach(function(d){var v=d.data();if(v&&typeof v.uid==="string"&&!ALL[v.uid])ALL[v.uid]={n:cl(v.owner,12)||"Chibi",foot:typeof v.foot==="string"&&v.foot.length<40000?v.foot:"",ride:""}})}).catch(function(){});
+  var a=db.collection("park_presence").limit(300).get().then(function(q){q.forEach(function(d){var v=normP(d.data());if(v)ALL[d.id]={n:v.n,foot:v.foot,ride:v.ride,hf:""}})}).catch(function(){});
+  var b=db.collection("park_houses").get().then(function(q){q.forEach(function(d){var v=d.data();if(v&&typeof v.uid==="string"){var hf=typeof v.foot==="string"&&v.foot.length<40000?v.foot:"";if(!ALL[v.uid])ALL[v.uid]={n:cl(v.owner,12)||"Chibi",foot:hf,ride:"",hf:hf};else ALL[v.uid].hf=hf}})}).catch(function(){});
   Promise.all([a,b]).then(function(){loaded=true;loading=false;if(!ros.hidden)fill()})}
  function fill(){ros.textContent="";var on={},L=[];
-  entries().forEach(function(d){if(d.me||fresh(d)){on[d.id]=1;L.push({id:d.id,n:d.n,me:!!d.me,on:1,src:((d.me?(my.pk>=0):parkedOk(d))?d.foot:d.ride)||d.foot||d.ride||""})}});
-  Object.keys(ALL).forEach(function(k){if(on[k]||k===uid)return;var v=ALL[k];L.push({id:k,n:v.n,me:0,on:0,src:v.foot||v.ride||""})});
+  entries().forEach(function(d){if(d.me||fresh(d)){on[d.id]=1;var al=ALL[d.id]||{};L.push({id:d.id,n:d.n,me:!!d.me,on:1,c:[(d.me?(my.pk>=0):parkedOk(d))?d.foot:d.ride,d.foot,d.ride,al.foot,al.ride,al.hf]})}});
+  Object.keys(ALL).forEach(function(k){if(on[k]||k===uid)return;var v=ALL[k];L.push({id:k,n:v.n,me:0,on:0,c:[v.foot,v.ride,v.hf]})});
   L.sort(function(a,b){return (b.me?1:0)-(a.me?1:0)||b.on-a.on||String(a.n).localeCompare(String(b.n))});
-  L.forEach(function(d){var w=h("div",{class:"rp"+(d.me?" me":"")+(d.on?"":" off")}),av=h("div",{class:"ra"}),sv=(isChibi(d.src)&&clean(d.src))||window.defChibiNode();
+  L.forEach(function(d){var w=h("div",{class:"rp"+(d.me?" me":"")+(d.on?"":" off")}),av=h("div",{class:"ra"}),sv=null;for(var ci=0;ci<d.c.length&&!sv;ci++){var cs=d.c[ci];if(isChibi(cs))sv=clean(cs)}if(!sv)sv=window.defChibiNode();
    if(sv)av.appendChild(sv);else av.textContent="\ud83d\udc36";w.appendChild(av);w.appendChild(h("span",{text:(d.on?"\ud83d\udfe2 ":"\u26aa ")+d.n+(d.me?" (you)":"")}));ros.appendChild(w)});
   var n1=L.filter(function(d){return d.on}).length;
   ros.appendChild(h("div",{class:"re",text:L.length+" chibi lahat \u00b7 "+n1+" online"+(loaded||!db?"":" \u00b7 nilo-load ang offline...")}))}
