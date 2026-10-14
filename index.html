@@ -869,13 +869,17 @@ const mineOnly=(x,u)=>!x.to||!x.to.length||x.to.indexOf(u)>-1;
 const items=(d,u)=>auto(d).concat((S.items[key(d)]||[]).map((x,i)=>({...x,i}))).filter(x=>u===null||mineOnly(x,u===undefined?ME:u)).sort((a,b)=>(a.tm||"").localeCompare(b.tm||""));
 const iid=(d,x)=>key(d)+"_"+(x.id||(x.ty+"_"+hash(x.t)));
 const mine=()=>S.done[ME]||(S.done[ME]=new Set);
-function saveMine(){const ids=[...mine()];if(online)queue(()=>db.doc("done/"+uid).set({ids}));else saveLocal()}
+let SBM=false;const SBV={};
+const SBU0="https://ntcdqdfhblmcgbypnkwk.supabase.co",SBK0="sb_publishable_9mQYTiI4h0Nr2Sjb1qVJ6A_9W9Wojsk";
+async function sbr(fn,body){const r=await fetch(SBU0+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SBK0,Authorization:"Bearer "+SBK0,"Content-Type":"application/json"},body:JSON.stringify(body||{})});if(!r.ok)throw new Error("supabase "+fn+" "+r.status);const t=await r.text();return t?JSON.parse(t):null}
+function saveMine(){const ids=[...mine()];if(online&&SBM)queue(async()=>{if(!(await sbr("eng_set_done",{p_uid:uid,p_ids:ids})))throw new Error("save failed")});else if(online)queue(()=>db.doc("done/"+uid).set({ids}));else saveLocal()}
 const newId=()=>"i"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const sameItem=(a,b)=>!!a&&!!b&&(a.id&&b.id?a.id===b.id:(!a.id&&!b.id&&a.t===b.t&&a.ty===b.ty&&(a.tm||"")===(b.tm||"")&&(a.by||"")===(b.by||"")&&(a.at||0)===(b.at||0)&&(a.sr||"")===(b.sr||"")));
 function mutate(k,fn){
  const l1=fn((S.items[k]||[]).slice());
  if(l1.length)S.items[k]=l1;else delete S.items[k];
- if(online)queue(()=>db.runTransaction(async tx=>{const ref=db.doc("items/"+k),snap=await tx.get(ref),cur=snap.exists?(snap.data().list||[]):[],nx=fn(cur.slice());if(nx.length)tx.set(ref,{list:nx});else if(snap.exists)tx.delete(ref)}));
+ if(online&&SBM)queue(async()=>{for(let t=0;t<6;t++){const g=await sbr("eng_get_item",{p_day:k}),cur=(g&&g.list)||[],nx=fn(cur.slice()),r=await sbr("eng_put_items",{p_day:k,p_list:nx,p_v:g?g.v:0});if(r&&r.ok){SBV[k]=r.v;return}if(!r||!r.conflict)throw new Error((r&&r.err)||"save failed")}throw new Error("Busy, please try again")});
+ else if(online)queue(()=>db.runTransaction(async tx=>{const ref=db.doc("items/"+k),snap=await tx.get(ref),cur=snap.exists?(snap.data().list||[]):[],nx=fn(cur.slice());if(nx.length)tx.set(ref,{list:nx});else if(snap.exists)tx.delete(ref)}));
  else saveLocal()}
 let RD=null,RP=null,RC="",RT=0;window.addEventListener("resize",function(){RP=null;try{drawCal()}catch(e){}});
 function drawCal(){
@@ -960,7 +964,7 @@ function drawMembers(){
     ab=mk(isA?"Remove admin":"Make admin",isA?"Remove admin from":"Make admin"),rb=mk("Remove","Remove member");
    w.style.cssText="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end";
    ab.onclick=()=>{if(confirm((isA?"Remove admin rights from ":"Make admin: ")+nm+"?"))queue(async()=>{await db.doc("members/"+u).update({admin:!isA});window.__loadMembers&&window.__loadMembers()})};
-   rb.onclick=()=>{if(confirm('Remove "'+nm+'" from the team? Their progress is deleted. If they open the app again they rejoin as a new member.'))queue(async()=>{await db.doc("done/"+u).delete();await db.doc("members/"+u).delete();window.__loadMembers&&window.__loadMembers()})};
+   rb.onclick=()=>{if(confirm('Remove "'+nm+'" from the team? Their progress is deleted. If they open the app again they rejoin as a new member.'))queue(async()=>{if(SBM){try{await sbr("eng_delete_done",{p_uid:u})}catch(e){console.error(e)}}try{await db.doc("done/"+u).delete()}catch(e){if(!SBM)throw e}await db.doc("members/"+u).delete();window.__loadMembers&&window.__loadMembers()})};
    w.appendChild(ab);w.appendChild(rb);r.appendChild(w)}
   L.appendChild(r)})}
 function drawAdmin(){
@@ -1071,9 +1075,14 @@ render();
  try{const w=await user.can("data.write");canW=w!==false;canEditAll=await user.canEdit()}catch(e){}
  online=true;ME=uid;S.items={};S.done={};S.admins=new Set;
  const bad=e=>console.error(e);
- db.collection("items").onSnapshot(s=>{S.items={};s.docs.forEach(d=>S.items[d.id]=d.data().list||[]);render()},bad);
+ const loadItemsSB=async()=>{const rows=await sbr("eng_list_items");const o={};(rows||[]).forEach(r=>{o[r.day]=r.list||[];SBV[r.day]=r.v});S.items=o;render()};
+ try{await loadItemsSB();SBM=true}catch(e){console.error("Supabase items unavailable, using Firestore",e);SBM=false}
+ if(SBM){setInterval(()=>{if(!document.hidden&&pend===0)loadItemsSB().catch(bad)},30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden&&pend===0)loadItemsSB().catch(bad)});
+  /* one-time copy of old Firestore data (admin only; retries on next open if Firestore is still over quota) */
+  (async()=>{try{if(!canEditAll||await sbr("eng_is_migrated"))return;const si=await db.collection("items").get(),sd=await db.collection("done").get(),it={},dn={};si.docs.forEach(d=>{const l=d.data().list||[];if(l.length)it[d.id]=l});sd.docs.forEach(d=>{dn[d.id]=d.data().ids||[]});await sbr("eng_import",{p_items:it,p_done:dn});await loadItemsSB();dnT=-1e9;pullDone()}catch(e){console.error("migration waiting",e)}})()}
+ else db.collection("items").onSnapshot(s=>{S.items={};s.docs.forEach(d=>S.items[d.id]=d.data().list||[]);render()},bad);
  db.doc("opens/"+uid).onSnapshot(s=>{const o=(s.data()||{}).o||{};Object.keys(o).forEach(i=>{OPENED.add(i);VIS.add(i)});try{localStorage.setItem(VK,JSON.stringify([...VIS]))}catch(e){}render()},bad);
- let firstDone=true,dnT=0;const pullDone=async()=>{if(!firstDone&&(pend>0||Date.now()-dnT<600000))return;dnT=Date.now();try{const s=await db.collection("done").get();const own=firstDone?null:S.done[ME];firstDone=false;S.done={};s.docs.forEach(d=>S.done[d.id]=new Set(d.data().ids||[]));if(own)S.done[ME]=own;render()}catch(e){bad(e)}};pullDone();setInterval(()=>{if(!document.hidden){dnT=-1e9;pullDone()}},1800000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pullDone()});
+ let firstDone=true,dnT=0;const pullDone=async()=>{if(!firstDone&&(pend>0||Date.now()-dnT<600000))return;dnT=Date.now();try{let rows;if(SBM)rows=(await sbr("eng_list_done")||[]).map(r=>[r.uid,r.ids]);else rows=(await db.collection("done").get()).docs.map(d=>[d.id,d.data().ids]);const own=firstDone?null:S.done[ME];firstDone=false;S.done={};rows.forEach(r=>S.done[r[0]]=new Set(r[1]||[]));if(own)S.done[ME]=own;render()}catch(e){bad(e)}};pullDone();setInterval(()=>{if(!document.hidden){dnT=-1e9;pullDone()}},1800000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pullDone()});
  const MK="eng-members-v1";const loadMembers=async(force)=>{try{if(!force){try{const c=JSON.parse(localStorage.getItem(MK)||"null");if(c&&Array.isArray(c.ids)&&c.ids.length){S.roster=c.ids;S.admins=new Set(c.ad||[]);Object.keys(c.nm||{}).forEach(k=>{names[k]=c.nm[k]});if(uid)canEditAll=S.admins.has(uid);render();if(Date.now()-c.t<9e5)return}}catch(e){}}const s=await db.collection("members").get();S.roster=s.docs.map(d=>d.id);S.admins=new Set(s.docs.filter(d=>(d.data()||{}).admin===true).map(d=>d.id));const nm={};s.docs.forEach(d=>{const n=(d.data()||{}).name;if(n){names[d.id]=n;nm[d.id]=n}});try{localStorage.setItem(MK,JSON.stringify({t:Date.now(),ids:S.roster,ad:[...S.admins],nm}))}catch(e){}if(uid)canEditAll=S.admins.has(uid);render()}catch(e){bad(e)}};
  window.__loadMembers=()=>loadMembers(true);
  try{const n=(await user.me()).name;if(n)names[uid]=n}catch(e){}
