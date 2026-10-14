@@ -959,15 +959,15 @@ let canEditAll=false,tok=0;
 const CHC={},CHK="boi-chc-v2";
 try{const j=JSON.parse(localStorage.getItem(CHK)||"null");if(j&&typeof j==="object")Object.keys(j).forEach(k=>{if(typeof j[k]==="string"&&j[k].length<40000)CHC[k]=j[k]})}catch(e){}
 const CHF={};
-function chSaveC(){try{localStorage.setItem(CHK,JSON.stringify(CHC))}catch(e){}}
+function chSaveC(){try{const o={};Object.keys(CHC).forEach(k=>{if(typeof CHC[k]==="string"&&CHC[k].length<40000)o[k]=CHC[k]});localStorage.setItem(CHK,JSON.stringify(o))}catch(e){}}
 let HFP=null;
-function houseFoots(){if(!HFP)HFP=db?db.collection("park_houses").get().then(q=>{const m={};q.forEach(d=>{const v=d.data();if(v&&typeof v.uid==="string"&&typeof v.foot==="string"&&v.foot.length<40000&&v.foot.indexOf("<image")>=0)m[v.uid]=v.foot});return m}).catch(()=>{HFP=null;return {}}):Promise.resolve({});return HFP}
+function houseFoots(){if(!HFP)HFP=db?db.collection("park_houses").get().then(q=>{const m={};q.forEach(d=>{const v=d.data();if(v&&typeof v.uid==="string"&&typeof v.foot==="string"&&v.foot.length<400000&&v.foot.indexOf("<image")>=0)m[v.uid]=v.foot});return m}).catch(()=>{HFP=null;return {}}):Promise.resolve({});return HFP}
 async function chibiFor(ids){const miss=ids.filter(i=>!CHF[i]);miss.forEach(i=>CHF[i]=1);
- if(db&&miss.length)await Promise.all(miss.map(async i=>{try{const d=await db.doc("park_presence/"+i).get(),dd=d.exists?d.data():{},ok=x=>typeof x==="string"&&x.length<40000&&x.indexOf("<image")>=0;let f=[dd.ride,dd.foot].find(ok)||"";if(!f){const hm=await houseFoots();f=hm[i]||""}if(f)CHC[i]=f;else if(!(i in CHC))CHC[i]=""}catch(e){if(!(i in CHC))CHC[i]=""}}));
+ if(db&&miss.length)await Promise.all(miss.map(async i=>{try{const d=await db.doc("park_presence/"+i).get(),dd=d.exists?d.data():{},ok=x=>typeof x==="string"&&x.length<400000&&x.indexOf("<image")>=0;let f=[dd.ride,dd.foot].find(ok)||"";if(!f){const hm=await houseFoots();f=hm[i]||""}if(f)CHC[i]=f;else if(!(i in CHC))CHC[i]=""}catch(e){if(!(i in CHC))CHC[i]=""}}));
  if(miss.length)chSaveC();
  try{const sn=window.BoiPage&&BoiPage.snap();if(sn&&(sn.mride||sn.mfoot)){CHC[uid]=sn.mride||sn.mfoot;chSaveC()}}catch(e){}}
 let pfT=0,pfN=0;pfT=setInterval(()=>{pfN++;try{if(online&&uid&&S.roster&&[...S.roster].length){clearInterval(pfT);const ids=[...new Set([...S.roster,uid])];chibiFor(ids).then(()=>{const T=document.getElementById("team");if(T)fillChibis(T)})}}catch(e){}if(pfN>60)clearInterval(pfT)},1000);
-function fillChibis(T){const C=window.Community&&Community.clean;try{const sn=window.BoiPage&&BoiPage.snap();if(uid&&sn&&(sn.mride||sn.mfoot))CHC[uid]=sn.mride||sn.mfoot}catch(e){}
+function fillChibis(T){const C=window.Community&&(Community.cleanBig||Community.clean);try{const sn=window.BoiPage&&BoiPage.snap();if(uid&&sn&&(sn.mride||sn.mfoot))CHC[uid]=sn.mride||sn.mfoot}catch(e){}
  T.querySelectorAll(".cbv").forEach(el=>{if(el.dataset.k==="r")return;const src=CHC[el.dataset.u];let sv=null;if(src&&C)sv=C(src);
   if(sv){el.replaceChildren(sv);el.dataset.k="r"}else if(!el.firstChild&&window.defChibiNode)el.appendChild(window.defChibiNode())})}
 async function drawTeam(){
@@ -3573,15 +3573,16 @@ function toast(m){var t=$("cmToast");if(!t)return;t.textContent=m;clearTimeout(t
 /* ---------- safe SVG import (avatars from other members) ---------- */
 var OKT={svg:1,g:1,path:1,circle:1,ellipse:1,rect:1,polygon:1,polyline:1,line:1,defs:1,lineargradient:1,radialgradient:1,stop:1,clippath:1,text:1,tspan:1,image:1};
 var OKA=/^(d|fill|stroke|stroke-width|stroke-linecap|stroke-linejoin|stroke-dasharray|opacity|fill-opacity|stroke-opacity|transform|transform-origin|cx|cy|r|rx|ry|x|y|dx|dy|width|height|x1|y1|x2|y2|points|viewbox|class|offset|stop-color|stop-opacity|gradientunits|gradienttransform|fx|fy|fill-rule|clip-rule|font-size|font-family|font-weight|text-anchor|letter-spacing|role|aria-label|aria-hidden|style|id|clip-path|xmlns|preserveaspectratio)$/i;
-var pre=0;
+var pre=0,CLBIG=false;
 function scrub(e,p){Array.prototype.slice.call(e.attributes).forEach(function(a){var n=a.name,v=a.value;
- if(e.localName==="image"&&n==="href"){if(!/^data:image\/(webp|png);base64,[A-Za-z0-9+\/=]{20,30000}$/.test(v))e.removeAttribute(n);return}
+ if(e.localName==="image"&&n==="href"){if(!(CLBIG?/^data:image\/(webp|png);base64,[A-Za-z0-9+\/=]{20,400000}$/:/^data:image\/(webp|png);base64,[A-Za-z0-9+\/=]{20,30000}$/).test(v))e.removeAttribute(n);return}
  if(!OKA.test(n)||/javascript:|data:|https?:|expression|@import|[<>]/i.test(v)){e.removeAttribute(n);return}
  if(/url\(/i.test(v)){if(n==="style"||!/^url\(#[\w-]+\)$/.test(v)){e.removeAttribute(n);return}e.setAttribute(n,v.replace(/url\(#([\w-]+)\)/,"url(#"+p+"$1)"));return}
  if(n==="class"&&!/^[\w -]*$/.test(v))e.removeAttribute(n);
  else if(n==="id"){if(/^[\w-]+$/.test(v))e.setAttribute("id",p+v);else e.removeAttribute(n)}
  else if(n==="style"&&!/^[\w\s:;.#%(),-]*$/.test(v))e.removeAttribute(n)})}
-function clean(str){if(typeof str!=="string"||str.length<20||str.length>40000)return null;var d;try{d=new DOMParser().parseFromString(str,"image/svg+xml")}catch(e){return null}
+function cleanBig(str){CLBIG=true;try{return clean(str,true)}finally{CLBIG=false}}
+function clean(str,big){if(typeof str!=="string"||str.length<20||str.length>(big?400000:40000))return null;var d;try{d=new DOMParser().parseFromString(str,"image/svg+xml")}catch(e){return null}
  var r=d.documentElement;if(!r||r.localName!=="svg"||d.getElementsByTagName("parsererror").length)return null;var p="c"+(++pre)+"-";
  (function walk(n){for(var i=n.childNodes.length-1;i>=0;i--){var c=n.childNodes[i];if(c.nodeType===3){if(c.nodeValue.length>40)c.nodeValue=c.nodeValue.slice(0,40);continue}
   if(c.nodeType!==1||!OKT[c.localName.toLowerCase()]){n.removeChild(c);continue}scrub(c,p);walk(c)}})(r);
@@ -3832,17 +3833,17 @@ root.innerHTML='<section class="card cm"><div class="head"><h2>Ashleyville üèòÔ
  var chip=$("cmChip"),ros=$("cmRoster");if(!chip||!ros)return;
  var ALL={},loaded=false,loading=false;
  function load(){if(!db||loading)return;loading=true;
-  var a=db.collection("park_presence").limit(300).get().then(function(q){q.forEach(function(d){var v=normP(d.data());if(v)ALL[d.id]={n:v.n,foot:v.foot,ride:v.ride,hf:""}})}).catch(function(){});
-  var b=db.collection("park_houses").get().then(function(q){q.forEach(function(d){var v=d.data();if(v&&typeof v.uid==="string"){var hf=typeof v.foot==="string"&&v.foot.length<40000?v.foot:"";if(!ALL[v.uid])ALL[v.uid]={n:cl(v.owner,12)||"Chibi",foot:hf,ride:"",hf:hf};else ALL[v.uid].hf=hf}})}).catch(function(){});
+  var a=db.collection("park_presence").limit(300).get().then(function(q){q.forEach(function(d){var v=normP(d.data()),r=d.data()||{},bg=function(x){return typeof x==="string"&&x.length<400000?x:""};if(v)ALL[d.id]={n:v.n,foot:bg(r.foot)||v.foot,ride:bg(r.ride)||v.ride,hf:""}})}).catch(function(){});
+  var b=db.collection("park_houses").get().then(function(q){q.forEach(function(d){var v=d.data();if(v&&typeof v.uid==="string"){var hf=typeof v.foot==="string"&&v.foot.length<400000?v.foot:"";if(!ALL[v.uid])ALL[v.uid]={n:cl(v.owner,12)||"Chibi",foot:hf,ride:"",hf:hf};else ALL[v.uid].hf=hf}})}).catch(function(){});
   Promise.all([a,b]).then(function(){loaded=true;loading=false;if(!ros.hidden)fill()})}
  function fill(){ros.textContent="";var on={},L=[];
   entries().forEach(function(d){if(d.me||fresh(d)){on[d.id]=1;var al=ALL[d.id]||{};L.push({id:d.id,n:d.n,me:!!d.me,on:1,c:[(d.me?(my.pk>=0):parkedOk(d))?d.foot:d.ride,d.foot,d.ride,al.foot,al.ride,al.hf]})}});
   Object.keys(ALL).forEach(function(k){if(on[k]||k===uid)return;var v=ALL[k];L.push({id:k,n:v.n,me:0,on:0,c:[v.foot,v.ride,v.hf]})});
   L.sort(function(a,b){return (b.me?1:0)-(a.me?1:0)||b.on-a.on||String(a.n).localeCompare(String(b.n))});
-  L.forEach(function(d){var w=h("div",{class:"rp"+(d.me?" me":"")+(d.on?"":" off")}),av=h("div",{class:"ra"}),sv=null;for(var ci=0;ci<d.c.length&&!sv;ci++){var cs=d.c[ci];if(isChibi(cs))sv=clean(cs)}if(!sv)sv=window.defChibiNode();
+  L.forEach(function(d){var w=h("div",{class:"rp"+(d.me?" me":"")+(d.on?"":" off")}),av=h("div",{class:"ra"}),sv=null;for(var ci=0;ci<d.c.length&&!sv;ci++){var cs=d.c[ci];if(isChibi(cs))sv=cleanBig(cs)}if(!sv){d.nospr=1;sv=window.defChibiNode()}
    if(sv)av.appendChild(sv);else av.textContent="\ud83d\udc36";w.appendChild(av);w.appendChild(h("span",{text:(d.on?"\ud83d\udfe2 ":"\u26aa ")+d.n+(d.me?" (you)":"")}));ros.appendChild(w)});
-  var n1=L.filter(function(d){return d.on}).length;
-  ros.appendChild(h("div",{class:"re",text:L.length+" chibi lahat \u00b7 "+n1+" online"+(loaded||!db?"":" \u00b7 nilo-load ang offline...")}))}
+  var n1=L.filter(function(d){return d.on}).length,n0=L.filter(function(d){return d.nospr}).length;
+  ros.appendChild(h("div",{class:"re",text:L.length+" chibi lahat \u00b7 "+n1+" online"+(n0?" \u00b7 "+n0+" walang sprite":"")+(loaded||!db?"":" \u00b7 nilo-load ang offline...")}))}
  chip.onclick=function(){var o=ros.hidden;ros.hidden=!o;chip.setAttribute("aria-expanded",String(o));if(o){fill();if(!loaded)load()}};
  var _rp=renderPets;renderPets=function(){var r=_rp.apply(this,arguments);if(!ros.hidden)try{fill()}catch(e){}return r};
 })();
@@ -3867,7 +3868,7 @@ function lotTap(n){var all=getStores(),u=null;Object.keys(all).forEach(function(
  wr.addEventListener("pointerup",up);wr.addEventListener("pointercancel",up)})();
 document.addEventListener("visibilitychange",function(){if(started&&!document.hidden)beat(false)});
 window.addEventListener("boi-mini-ready",function(){if(started){beat(true);try{renderPets()}catch(e){}}});
-window.Community={show:function(){start();genNpc();renderAll();if(window.Economy)Economy.fire()},hide:function(){stop()},clean:clean,
+window.Community={show:function(){start();genNpc();renderAll();if(window.Economy)Economy.fire()},hide:function(){stop()},clean:clean,cleanBig:cleanBig,
  parse:function(d){var S=norm(d);if(!S)return null;var K=kind(S.kind);return{name:S.name,items:S.menu.map(function(i){return K.items[i]?[K.items[i][0],S.mn[i]||K.items[i][1]]:null}).filter(Boolean)}}};
 setInterval(function(){if(started&&!document.hidden){genNpc();if(mode==="visit"&&visitUid===myId()&&!decoEdit)renderPanel()}},30000);
 if(!root.hidden)window.Community.show();
