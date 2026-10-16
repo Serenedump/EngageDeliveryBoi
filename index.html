@@ -71,7 +71,7 @@ textarea:focus-visible{outline:3px solid var(--today)}
 form{display:grid;gap:8px;margin-top:14px;padding-top:14px;border-top:2px solid var(--line)}
 form h3{margin:0;font-size:1rem}
 input,select{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;width:100%}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row>*{min-width:0;max-width:100%}input[type=time]{min-width:0}
 .go{background:var(--sel);color:var(--selink);border-color:var(--sel);font-weight:700}
 .go:hover{background:var(--sel);filter:brightness(.95)}
 
@@ -627,8 +627,9 @@ body.on-pet #epet,body.on-pet #epet-show{display:none!important}
       <p class="sum" id="sum"></p>
       <div id="list"></div>
       <form id="add"><h3>Add many to this date</h3>
-        <textarea id="t" rows="3" required placeholder="Paste links, one per line. Titles are filled in for you.&#10;Or: My title | https://site.com/post"></textarea>
-        <div class="row"><select id="ty"><option value="a">Article</option><option value="v">Video</option></select><input id="tm" type="time" aria-label="Time"></div>
+        <input id="ttl" type="text" maxlength="200" placeholder="Title (optional, for one link)" aria-label="Title" autocomplete="off" enterkeyhint="next">
+        <textarea id="t" rows="3" required aria-label="Link" placeholder="Link: paste one per line. Titles are filled in for you.&#10;Or: My title | https://site.com/post"></textarea>
+        <div class="row" style="grid-template-columns:1fr"><select id="ty"><option value="a">Article</option><option value="v">Video</option></select></div>
         <div id="adminAdd" hidden><details id="assign"><summary id="assignSum">Assign to: Everyone</summary><div id="assignList"></div></details>
           <select id="rep" aria-label="Repeat"><option value="">Does not repeat</option><option value="d">Every day for 2 weeks</option><option value="w">Weekdays for 4 weeks</option><option value="k">Every week for 8 weeks</option></select></div>
         <button class="go" type="submit">Add items</button></form>
@@ -864,6 +865,7 @@ let q=Promise.resolve(),pend=0;const queue=f=>{pend++;q=q.then(f).finally(()=>{p
 const SHOW_SUGGESTED=false; /* set to true to bring back the built-in sample items */
 function auto(d){if(!SHOW_SUGGESTED)return [];const n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5),o=[];for(let i=0;i<4;i++){o.push({t:ART[(n+i*3)%ART.length],ty:"a",tm:pad(7+i*3)+":00",auto:1});o.push({t:VID[(n*5+3+i*3)%VID.length],ty:"v",tm:pad(8+i*3)+":30",auto:1})}return o}
 const mineOnly=(x,u)=>!x.to||!x.to.length||x.to.indexOf(u)>-1;
+const normUrl=s=>{if(!s)return"";try{const x=new URL(s);const h=x.hostname.toLowerCase().replace(/^(www|m|mobile)\./,"");const q=[...x.searchParams.entries()].filter(a=>!/^(utm_|fbclid$|igsh$|igshid$|si$|gclid$|feature$|ref_src$|ref_url$|share_id$|is_from_webapp$|sender_device$|_r$|_t$)/i.test(a[0])).sort((a,b)=>a[0]<b[0]?-1:1).map(a=>a[0]+"="+a[1]).join("&");return h+x.pathname.replace(/\/+$/,"")+(q?"?"+q:"")}catch(e){return String(s).trim().toLowerCase()}};
 const plat=x=>{let h="";try{h=new URL(x.u).hostname.toLowerCase().replace(/^(www|m|mobile|web|vm|vt)\./,"")}catch(e){return 9}if(h==="fb.watch"||h==="fb.com"||/(^|\.)facebook\.com$/.test(h))return 0;if(/(^|\.)instagram\.com$/.test(h))return 1;if(h==="x.com"||h==="twitter.com"||h==="t.co")return 2;if(/(^|\.)tiktok\.com$/.test(h))return 3;if(h==="youtu.be"||/(^|\.)youtube\.com$/.test(h))return 4;return 5};
 const items=(d,u)=>auto(d).concat((S.items[key(d)]||[]).map((x,i)=>({...x,i}))).filter(x=>u===null||mineOnly(x,u===undefined?ME:u)).sort((a,b)=>(plat(a)-plat(b))||(a.tm||"").localeCompare(b.tm||""));
 const iid=(d,x)=>key(d)+"_"+(x.id||(x.ty+"_"+hash(x.t)));
@@ -980,18 +982,22 @@ function editRow(x){
  ty.className="ni";ty.setAttribute("aria-label","Type");ty.innerHTML='<option value="a">Article</option><option value="v">Video</option>';ty.value=x.ty;
  let abox=null,sc=null;
  const sv=document.createElement("button"),cn=document.createElement("button");sv.type="button";cn.type="button";sv.textContent="Save";cn.textContent="Cancel";
- row.appendChild(ty);row.appendChild(tm);f.appendChild(t);f.appendChild(u);f.appendChild(row);
+ row.appendChild(ty);row.style.gridTemplateColumns="1fr";f.appendChild(t);f.appendChild(u);f.appendChild(row);
  if(adm){const d=document.createElement("details"),sy=document.createElement("summary"),ch=document.createElement("div"),bx=document.createElement("div"),
    upd=()=>{const n=bx.querySelectorAll("input:checked").length;sy.textContent="Assign to: "+(n?n+" selected":"Everyone")};
   ch.className="chips";bx.className="alist";abox=bx;fillAssign(bx,ch,new Set(x.to||[]),upd,"ni");upd();d.appendChild(sy);d.appendChild(ch);d.appendChild(bx);f.appendChild(d)}
  if(x.sr){sc=document.createElement("select");sc.className="ni";sc.setAttribute("aria-label","Apply changes to");
   sc.innerHTML='<option value="one">Apply to: only this day</option><option value="all">Apply to: this and all later days</option>';f.appendChild(sc)}
- sv.onclick=()=>{const nt=t.value.trim(),l=S.items[k]||[],o=findIt(k,x);if(!nt||!o)return;const nu=u.value.trim(),
+ sv.onclick=async()=>{if(window.__editing||!t.value.trim())return;window.__editing=1;try{if(online&&pend===0&&window.__reloadItems){try{await window.__reloadItems(true)}catch(_){}}
+  const nt=t.value.trim(),l=S.items[k]||[],o=findIt(k,x);if(!o)return;const nu=u.value.trim();
+  {const nn=normUrl(/^https?:\/\//.test(nu)?nu:"");if(nn&&nn!==normUrl(o.u)){let hit=null;Object.keys(S.items).some(d=>(S.items[d]||[]).some(z=>{if(d===k&&sameItem(z,o))return false;if(o.sr&&z.sr===o.sr)return false;if(normUrl(z.u)===nn){hit=d;return true}return false}));
+   if(hit&&!confirm("This link is already in the list ("+hit+").\n\nOK = save anyway\nCancel = keep editing"))return}}
+  const
    ch={t:nt,u:/^https?:\/\//.test(nu)?nu:"",tm:tm.value,ty:ty.value},to=abox?[...abox.querySelectorAll("input:checked")].map(i=>i.value):null,
    apply=it=>{const n=Object.assign({},it,ch);if(!it.id)n.id=it.ty+"_"+hash(it.t);if(to){delete n.to;delete n.gn;delete n.gx;if(to.length)n.to=to}return n};
   if(o.sr&&sc&&sc.value==="all"){Object.keys(S.items).filter(z=>z>=k).forEach(z=>{if((S.items[z]||[]).some(y=>y.sr===o.sr))mutate(z,l=>l.map(y=>y.sr===o.sr?apply(y):y))})}
   else{mutate(k,l=>l.map(y=>sameItem(y,o)?apply(y):y))}
-  editKey=null;render()};
+  editKey=null;render()}finally{window.__editing=0}};
  cn.onclick=()=>{editKey=null;drawList()};
  bar.appendChild(sv);bar.appendChild(cn);f.appendChild(bar);r.appendChild(f);setTimeout(()=>t.focus(),0);return r}
 let canEditAll=false,tok=0;
@@ -1055,21 +1061,23 @@ function autoItem(u){var x;try{x=new URL(u)}catch(e){return{t:u}}
  if(/(^|\.)facebook\.com$/.test(h)||h==="fb.com"){if(/^\/reel\//.test(p))return{t:"Facebook reel",ty:"v"};if(/\/videos?\/|^\/watch/.test(p))return{t:"Facebook video",ty:"v"};return{t:"Facebook post",ty:"a"}}
  if(h==="youtu.be"||/(^|\.)youtube\.com$/.test(h)){return{t:/^\/shorts\//.test(p)?"YouTube short":"YouTube video",ty:"v"}}
  var tt=h+(p==="/"?"":p);return{t:tt.length>60?tt.slice(0,58)+"…":tt}}
-document.getElementById("add").addEventListener("submit",e=>{e.preventDefault();
+document.getElementById("add").addEventListener("submit",async e=>{e.preventDefault();
  if(online&&!canW){alert("You have view-only access, so you can't add items.");return}
- const k=key(sel),ty=document.getElementById("ty").value,tm=document.getElementById("tm").value;
+ if(window.__adding)return;window.__adding=1;try{
+ const k=key(sel),ty=document.getElementById("ty").value,tm="";
  const to=[...document.querySelectorAll("#assignList input:checked")].map(i=>i.value),rp=document.getElementById("rep").value,sr0=Date.now().toString(36)+Math.random().toString(36).slice(2,6),dts=[sel];
  if(rp){const step=rp==="k"?7:1,cnt=rp==="d"?13:rp==="w"?27:7;for(let i=1;i<=cnt;i++){const dt=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()+i*step);if(rp==="w"&&(dt.getDay()===0||dt.getDay()===6))continue;dts.push(dt)}}
+  if(online&&pend===0&&window.__reloadItems){try{await window.__reloadItems()}catch(_){}}
   const nu=s=>{if(!s)return"";try{const x=new URL(s);const h=x.hostname.toLowerCase().replace(/^(www|m|mobile)\./,"");const q=[...x.searchParams.entries()].filter(a=>!/^(utm_|fbclid$|igsh$|igshid$|si$|gclid$|feature$|ref_src$|ref_url$|share_id$|is_from_webapp$|sender_device$|_r$|_t$)/i.test(a[0])).sort((a,b)=>a[0]<b[0]?-1:1).map(a=>a[0]+"="+a[1]).join("&");return h+x.pathname.replace(/\/+$/,"")+(q?"?"+q:"")}catch(e){return String(s).trim().toLowerCase()}};
   const ex=new Map();Object.keys(S.items||{}).forEach(d=>(S.items[d]||[]).forEach(z=>{const n=nu(z.u);if(n&&!ex.has(n))ex.set(n,d)}));
-  let ent=[];const seenU=new Set;let skipped=0;document.getElementById("t").value.split("\n").map(l=>l.trim()).filter(Boolean).forEach((l,li)=>{let t,u,lty=ty;const raw=l.split("|").map(z=>z.trim());
-   if(raw.length===1&&/^https?:\/\/\S+$/.test(raw[0])){u=raw[0];const g=autoItem(u);t=g.t;if(g.ty)lty=g.ty}else{t=raw[0];u=raw[1]}
+  let ent=[];const seenU=new Set;let skipped=0;const LN=document.getElementById("t").value.split("\n").map(l=>l.trim()).filter(Boolean),ct=(document.getElementById("ttl").value||"").trim();LN.forEach((l,li)=>{let t,u,lty=ty;const raw=l.split("|").map(z=>z.trim());
+   if(raw.length===1&&/^https?:\/\/\S+$/.test(raw[0])){u=raw[0];const g=autoItem(u);t=g.t;if(g.ty)lty=g.ty;if(ct&&LN.length===1)t=ct}else{t=raw[0];u=raw[1]}
    const n=nu(u);if(n&&seenU.has(n)){skipped++;return}if(n)seenU.add(n);ent.push({t,u,lty,li,n})});
-  const dup=ent.filter(z=>z.n&&ex.has(z.n));
+  const dup=ent.filter(z=>z.n&&ex.has(z.n));let force=false;
   if(dup.length){const lst=dup.slice(0,5).map(z=>"\u2022 "+(z.t&&z.t!==z.u?z.t+" ":"")+"("+ex.get(z.n)+")").join("\n")+(dup.length>5?"\n\u2026and "+(dup.length-5)+" more":"");
-   if(!confirm((dup.length>1?dup.length+" links are":"This link is")+" already in the list:\n"+lst+"\n\nOK = add anyway\nCancel = skip "+(dup.length>1?"them":"it"))){ent=ent.filter(z=>!(z.n&&ex.has(z.n)));if(!ent.length){alert("Nothing new to add.");return}}}
+   if(!confirm((dup.length>1?dup.length+" links are":"This link is")+" already in the list:\n"+lst+"\n\nOK = add anyway\nCancel = skip "+(dup.length>1?"them":"it"))){ent=ent.filter(z=>!(z.n&&ex.has(z.n)));if(!ent.length){alert("Nothing new to add.");return}}else force=true}
   const add={};ent.forEach(({t,u,lty,li})=>{dts.forEach((dt,di)=>{const kk=key(dt);const it={t,ty:lty,tm,u:/^https?:\/\//.test(u||"")?u:"",by:uid||"local"};if(!di)it.at=Date.now();if(to.length)it.to=to;if(rp)it.sr=sr0+"-"+li;it.id=newId();(add[kk]=add[kk]||[]).push(it)})});
-  Object.keys(add).forEach(kk=>mutate(kk,l=>l.concat(add[kk])));e.target.reset();render();if(skipped)alert("Skipped "+skipped+" link"+(skipped>1?"s":"")+" repeated in your paste.")});
+  Object.keys(add).forEach(kk=>mutate(kk,l=>{const have=new Set(l.map(z=>nu(z.u)).filter(Boolean));return l.concat(force?add[kk]:add[kk].filter(z=>!z.u||!have.has(nu(z.u))))}));e.target.reset();render();if(skipped)alert("Skipped "+skipped+" link"+(skipped>1?"s":"")+" repeated in your paste.")}finally{window.__adding=0}});
 render();
 (async()=>{
  try{user=await claude.use("user");db=await claude.use("db")}catch(e){}
@@ -1079,7 +1087,7 @@ render();
  try{const w=await user.can("data.write");canW=w!==false;canEditAll=await user.canEdit()}catch(e){}
  online=true;ME=uid;S.items={};S.done={};S.admins=new Set;
  const bad=e=>console.error(e);
- let LIT=0;const loadItemsSB=async()=>{LIT=Date.now();const rows=await sbr("eng_list_items");const o={};(rows||[]).forEach(r=>{o[r.day]=r.list||[];SBV[r.day]=r.v});S.items=o;render()};
+ let LIT=0;const loadItemsSB=async(qt)=>{LIT=Date.now();const rows=await sbr("eng_list_items");const o={};(rows||[]).forEach(r=>{o[r.day]=r.list||[];SBV[r.day]=r.v});S.items=o;if(!qt)render()};window.__reloadItems=(qt)=>SBM?loadItemsSB(qt):Promise.resolve();
  try{await loadItemsSB();SBM=true}catch(e){console.error("Supabase items unavailable, using Firestore",e);SBM=false}
  if(SBM){setInterval(()=>{if(!document.hidden&&pend===0)loadItemsSB().catch(bad)},90000);document.addEventListener("visibilitychange",()=>{if(!document.hidden&&pend===0&&Date.now()-LIT>45000)loadItemsSB().catch(bad)});
   /* one-time copy of old Firestore data (admin only; retries on next open if Firestore is still over quota) */
