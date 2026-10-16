@@ -864,7 +864,8 @@ let q=Promise.resolve(),pend=0;const queue=f=>{pend++;q=q.then(f).finally(()=>{p
 const SHOW_SUGGESTED=false; /* set to true to bring back the built-in sample items */
 function auto(d){if(!SHOW_SUGGESTED)return [];const n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5),o=[];for(let i=0;i<4;i++){o.push({t:ART[(n+i*3)%ART.length],ty:"a",tm:pad(7+i*3)+":00",auto:1});o.push({t:VID[(n*5+3+i*3)%VID.length],ty:"v",tm:pad(8+i*3)+":30",auto:1})}return o}
 const mineOnly=(x,u)=>!x.to||!x.to.length||x.to.indexOf(u)>-1;
-const items=(d,u)=>auto(d).concat((S.items[key(d)]||[]).map((x,i)=>({...x,i}))).filter(x=>u===null||mineOnly(x,u===undefined?ME:u)).sort((a,b)=>(a.tm||"").localeCompare(b.tm||""));
+const plat=x=>{let h="";try{h=new URL(x.u).hostname.toLowerCase().replace(/^(www|m|mobile|web|vm|vt)\./,"")}catch(e){return 9}if(h==="fb.watch"||h==="fb.com"||/(^|\.)facebook\.com$/.test(h))return 0;if(/(^|\.)instagram\.com$/.test(h))return 1;if(h==="x.com"||h==="twitter.com"||h==="t.co")return 2;if(/(^|\.)tiktok\.com$/.test(h))return 3;if(h==="youtu.be"||/(^|\.)youtube\.com$/.test(h))return 4;return 5};
+const items=(d,u)=>auto(d).concat((S.items[key(d)]||[]).map((x,i)=>({...x,i}))).filter(x=>u===null||mineOnly(x,u===undefined?ME:u)).sort((a,b)=>(plat(a)-plat(b))||(a.tm||"").localeCompare(b.tm||""));
 const iid=(d,x)=>key(d)+"_"+(x.id||(x.ty+"_"+hash(x.t)));
 const mine=()=>S.done[ME]||(S.done[ME]=new Set);
 let SBM=false;const SBV={};
@@ -1059,11 +1060,16 @@ document.getElementById("add").addEventListener("submit",e=>{e.preventDefault();
  const k=key(sel),ty=document.getElementById("ty").value,tm=document.getElementById("tm").value;
  const to=[...document.querySelectorAll("#assignList input:checked")].map(i=>i.value),rp=document.getElementById("rep").value,sr0=Date.now().toString(36)+Math.random().toString(36).slice(2,6),dts=[sel];
  if(rp){const step=rp==="k"?7:1,cnt=rp==="d"?13:rp==="w"?27:7;for(let i=1;i<=cnt;i++){const dt=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()+i*step);if(rp==="w"&&(dt.getDay()===0||dt.getDay()===6))continue;dts.push(dt)}}
- const add={},seenU=new Set;let skipped=0;document.getElementById("t").value.split("\n").map(l=>l.trim()).filter(Boolean).forEach((l,li)=>{let t,u,lty=ty;const raw=l.split("|").map(z=>z.trim());
-  if(raw.length===1&&/^https?:\/\/\S+$/.test(raw[0])){u=raw[0];const g=autoItem(u);t=g.t;if(g.ty)lty=g.ty}else{t=raw[0];u=raw[1]}
-  if(u&&seenU.has(u)){skipped++;return}if(u)seenU.add(u);
-  dts.forEach((dt,di)=>{const kk=key(dt);if(u&&(S.items[kk]||[]).some(z=>z.u===u)){if(!di)skipped++;return}const it={t,ty:lty,tm,u:/^https?:\/\//.test(u||"")?u:"",by:uid||"local"};if(!di)it.at=Date.now();if(to.length)it.to=to;if(rp)it.sr=sr0+"-"+li;it.id=newId();(add[kk]=add[kk]||[]).push(it)})});
- Object.keys(add).forEach(kk=>mutate(kk,l=>l.concat(add[kk])));e.target.reset();render();if(skipped)alert("Skipped "+skipped+" link"+(skipped>1?"s":"")+" already added.")});
+  const nu=s=>{if(!s)return"";try{const x=new URL(s);const h=x.hostname.toLowerCase().replace(/^(www|m|mobile)\./,"");const q=[...x.searchParams.entries()].filter(a=>!/^(utm_|fbclid$|igsh$|igshid$|si$|gclid$|feature$|ref_src$|ref_url$|share_id$|is_from_webapp$|sender_device$|_r$|_t$)/i.test(a[0])).sort((a,b)=>a[0]<b[0]?-1:1).map(a=>a[0]+"="+a[1]).join("&");return h+x.pathname.replace(/\/+$/,"")+(q?"?"+q:"")}catch(e){return String(s).trim().toLowerCase()}};
+  const ex=new Map();Object.keys(S.items||{}).forEach(d=>(S.items[d]||[]).forEach(z=>{const n=nu(z.u);if(n&&!ex.has(n))ex.set(n,d)}));
+  let ent=[];const seenU=new Set;let skipped=0;document.getElementById("t").value.split("\n").map(l=>l.trim()).filter(Boolean).forEach((l,li)=>{let t,u,lty=ty;const raw=l.split("|").map(z=>z.trim());
+   if(raw.length===1&&/^https?:\/\/\S+$/.test(raw[0])){u=raw[0];const g=autoItem(u);t=g.t;if(g.ty)lty=g.ty}else{t=raw[0];u=raw[1]}
+   const n=nu(u);if(n&&seenU.has(n)){skipped++;return}if(n)seenU.add(n);ent.push({t,u,lty,li,n})});
+  const dup=ent.filter(z=>z.n&&ex.has(z.n));
+  if(dup.length){const lst=dup.slice(0,5).map(z=>"\u2022 "+(z.t&&z.t!==z.u?z.t+" ":"")+"("+ex.get(z.n)+")").join("\n")+(dup.length>5?"\n\u2026and "+(dup.length-5)+" more":"");
+   if(!confirm((dup.length>1?dup.length+" links are":"This link is")+" already in the list:\n"+lst+"\n\nOK = add anyway\nCancel = skip "+(dup.length>1?"them":"it"))){ent=ent.filter(z=>!(z.n&&ex.has(z.n)));if(!ent.length){alert("Nothing new to add.");return}}}
+  const add={};ent.forEach(({t,u,lty,li})=>{dts.forEach((dt,di)=>{const kk=key(dt);const it={t,ty:lty,tm,u:/^https?:\/\//.test(u||"")?u:"",by:uid||"local"};if(!di)it.at=Date.now();if(to.length)it.to=to;if(rp)it.sr=sr0+"-"+li;it.id=newId();(add[kk]=add[kk]||[]).push(it)})});
+  Object.keys(add).forEach(kk=>mutate(kk,l=>l.concat(add[kk])));e.target.reset();render();if(skipped)alert("Skipped "+skipped+" link"+(skipped>1?"s":"")+" repeated in your paste.")});
 render();
 (async()=>{
  try{user=await claude.use("user");db=await claude.use("db")}catch(e){}
